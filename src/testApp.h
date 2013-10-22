@@ -3,8 +3,8 @@
 #ifndef _TEST_APP
 #define _TEST_APP
 
-#define CC_MODE_DISPLAY = 1
-#define CC_MODE_READ = 2
+#define CC_MODE_DISPLAY 1
+#define CC_MODE_READ 2
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
@@ -38,12 +38,21 @@ public:
     static bool byAngle(const anglePoint &a, const anglePoint &b);
     void sortCentroids(ofxCvContourFinder &contours);
     float getAngle(ofPoint &p1, ofPoint &p2);
+
+    void initDisplayMode();
+    void initReadMode();
+
+    void thresholdByHue(int hueValue);
+    void updateMesh();
     
+    void drawCalibration(int hueValue);
+    void drawCircle();
+
     vector<anglePoint> blobCenters;
     
     ofVideoGrabber movie;
     
-    ofxCvColorImage rgb,hsb;
+    ofxCvColorImage rgb,hsb,resized;
     ofxCvGrayscaleImage hue,sat,bri,filtered, flat;
     ofxCvContourFinder contours;
     ofPoint centerMarks;
