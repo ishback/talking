@@ -10,57 +10,62 @@ void testApp::setup() {
     w = ofGetWidth();
     h = ofGetHeight();
     centerMarks.x = -1;
+    threshold = 85;
 
-    mode = CC_MODE_DISPLAY;
+    mode = CC_CALIBRATE;
+    isCalibrated = false;
 
     movie.initGrabber(w, h, true);
 
+    calibrationImage.loadImage("calibration.jpg");
+    calibrationImage.resize(h, h);
+    
     //reserve memory for cv images
     rgb.allocate(w, h);
-    hsb.allocate(w, h);
-    hue.allocate(w, h);
-    sat.allocate(w, h);
-    bri.allocate(w, h);
+	grayImage.allocate(w, h);
+	grayThres.allocate(w, h);
+    
     resized.allocate(w, h);
-    filtered.allocate(w, h);
-
-    findHue = 255;
 
     initDisplayMode();
     initReadMode();
+    
+    artk.setup(w, h);
+	artk.setThreshold(threshold);
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 
+    if (movie.isFrameNew()) {
+        if (movie.isFrameNew()) {
+            rgb.setFromPixels(movie.getPixels(), w, h);
+//            rgb.mirror(false, true);
+        }
+    }
+    movie.update();
+    
     switch (mode) {
 
     case CC_MODE_READ:
         // cout << "READ" << endl;
-        if (movie.isFrameNew()) {
-            cout << "FRAME IS NEW" << endl;
-            // resized = rgb;
-            // rgb.resize(320, 240);
-
-
-            // create filtered image for contours
-            thresholdByHue(findHue);
-
-            //run the contour finder on the filtered image to find blobs with a certain hue
-            blobCenters.clear();
-            contours.findContours(filtered, 20, w * h / 2, 4, false);
-
-            sortCentroids(contours);
-
-            updateMesh();
-        }
-        movie.update();
+        
         break;
 
     case CC_MODE_DISPLAY:
         
         break;
+        
+    case CC_CALIBRATE:
+        // convert our camera image to grayscale
+        grayImage = rgb;
+        
+        // Pass in the new image pixels to artk
+        artk.update(grayImage.getPixels());
+        break;
     }
+    
+
 
 }
 
@@ -76,7 +81,7 @@ void testApp::draw() {
             ofTranslate(h, h-240);
             ofScale(0.25, 0.25);
             rgb.draw(0, 0);
-            filtered.draw(0, -240*4);
+//            filtered.draw(0, -240*4);
         }
         ofPopMatrix();
         rgb.getTextureReference().bind();
@@ -85,11 +90,64 @@ void testApp::draw() {
         break;
 
     case CC_MODE_DISPLAY:
-        // cout << "DISPLAY" << endl;
-        drawCalibration(findHue);
         drawCircle();
         break;
+            
+    case CC_CALIBRATE:
+        drawCalibration();
+            
+        ofPushMatrix();
+        {
+            ofTranslate(h, h-240);
+            ofScale(0.25, 0.25);
+            rgb.draw(0, 0);
+            //            filtered.draw(0, -240*4);
+        }
+        ofPopMatrix();
+            
+        // ARTK 2D stuff
+        // See if marker ID '0' was detected
+        // and draw blue corners on that marker only
+        int myIndex = artk.getMarkerIndex(0);
+        
+        ofDrawBitmapString(ofToString(artk.getNumDetectedMarkers()), w-40, 40);
+
+        if(myIndex >= 0) {
+            cout << "DETECTED" << endl;
+            // TODO - this should happen only after some time period
+            isCalibrated = true;
+            mode = CC_MODE_READ;
+            
+            // Get the corners
+            vector<ofPoint> corners;
+            artk.getDetectedMarkerBorderCorners(myIndex, corners);
+            
+            sourcePoints.clear();
+            sourcePoints.push_back(ofVec2f(corners[0].x, corners[0].y));
+            sourcePoints.push_back(ofVec2f(corners[1].x, corners[1].y));
+            sourcePoints.push_back(ofVec2f(corners[3].x, corners[3].y));
+            sourcePoints.push_back(ofVec2f(corners[2].x, corners[2].y));
+
+
+            
+
+            
+            
+            updateMesh();
+            
+            // Can also get the center like this:
+            // ofPoint center = artk.getDetectedMarkerCenter(myIndex);
+//            ofSetHexColor(0x0000ff);
+//            for(int i=0;i<corners.size();i++) {
+//                ofCircle(corners[i].x, corners[i].y, 10);
+//            }
+        }
+            
+        artk.draw(0, 0);
+
+        break;
     }
+    
 
 
     
@@ -124,51 +182,13 @@ void testApp::draw() {
 
 }
 
-void testApp::drawCalibration(int hueValue) {
-    // ofColor col = ofColor::fromHsb(hueValue, 255, 255);
-    ofColor col = ofColor(0, hueValue, 0);
-    ofSetColor(col);
-    int radius = 40;
-    int offset = 40;
-    ofCircle(ofPoint(offset, offset), radius);
-    ofCircle(ofPoint(offset, h-offset), radius);
-    ofCircle(ofPoint(h-offset, offset), radius);
-    ofCircle(ofPoint(h-offset, h-offset), radius);
+void testApp::drawCalibration() {
+    calibrationImage.draw(0, 0);
 }
 
 void testApp::drawCircle() {
     ofSetColor(255);
     ofCircle(ofPoint(h/2, h/2), 300);
-}
-
-void testApp::thresholdByHue(int hueValue) {
-    //copy webcam pixels to rgb image
-    rgb.setFromPixels(movie.getPixels(), w, h);
-
-    //mirror horizontal
-    rgb.mirror(false, true);
-
-    //duplicate rgb
-    // hsb = rgb;
-
-    //convert to hsb
-    // hsb.convertRgbToHsv();
-
-    //store the three channels as grayscale images
-    // hsb.convertToGrayscalePlanarImages(hue, sat, bri);
-
-    //filter image based on the hue value were looking for
-    for (int i = 0; i < w * h; i++) {
-        if ((rgb.getPixels()[i*3+1] > 100) && (rgb.getPixels()[i*3] < 100) && (rgb.getPixels()[i*3+2] < 100)) {
-            filtered.getPixels()[i] = 255;
-        } else {
-            filtered.getPixels()[i] = 0;
-        }
-
-        // cout << filtered.getPixels()[w*h-1] << endl;
-        // filtered.getPixels()[i] = ofInRange(hue.getPixels()[i], hueValue - 30, hueValue + 30) ? 255 : 0;
-    }
-    filtered.flagImageChanged();
 }
 
 void testApp::updateMesh() {
@@ -197,11 +217,11 @@ void testApp::initReadMode() {
 void testApp::mousePressed(int x, int y, int button) {
 
     //calculate local mouse x,y in image
-    int mx = x % w;
-    int my = y % h;
-
-    //get hue value on mouse position
-    findHue = hue.getPixels()[my * w + mx];
+//    int mx = x % w;
+//    int my = y % h;
+//
+//    //get hue value on mouse position
+//    findHue = hue.getPixels()[my * w + mx];
 }
 
 //--------------------------------------------------------------
@@ -268,7 +288,10 @@ void testApp::keyPressed(int key) {
     case '2':
         mode = CC_MODE_READ;
         break;
-
+            
+    case '3':
+        mode = CC_CALIBRATE;
+        break;
     }
 
 }

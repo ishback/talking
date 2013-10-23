@@ -5,11 +5,12 @@
 
 #define CC_MODE_DISPLAY 1
 #define CC_MODE_READ 2
+#define CC_CALIBRATE 3
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxQuadWarp.h"
-//#include "ofxARToolkitPlus.h"
+#include "ofxARToolkitPlus.h"
 
 
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
@@ -42,19 +43,19 @@ public:
 
     void initDisplayMode();
     void initReadMode();
-
-    void thresholdByHue(int hueValue);
+    
     void updateMesh();
     
-    void drawCalibration(int hueValue);
+    void drawCalibration();
     void drawCircle();
 
     vector<anglePoint> blobCenters;
     
     ofVideoGrabber movie;
     
-    ofxCvColorImage rgb,hsb,resized;
-    ofxCvGrayscaleImage hue,sat,bri,filtered, flat;
+    ofImage calibrationImage;
+    ofxCvColorImage rgb, resized;
+    ofxCvGrayscaleImage grayImage, grayThres;
     ofxCvContourFinder contours;
     ofPoint centerMarks;
 
@@ -68,6 +69,14 @@ public:
     vector < ofVec3f > destinationPoints;
     
     int mode;
+    bool isCalibrated;
+    
+    /* ARToolKitPlus class */
+    ofxARToolkitPlus artk;
+    int threshold;
+	
+    /* The four corners of the image */
+//    vector<ofPoint> displayImageCorners;
     
 };
 
