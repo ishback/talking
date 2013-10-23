@@ -9,6 +9,7 @@ void testApp::setup() {
 
     w = ofGetWidth();
     h = ofGetHeight();
+    centerMarks.x = -1;
 
     mode = CC_MODE_DISPLAY;
 
@@ -23,7 +24,7 @@ void testApp::setup() {
     resized.allocate(w, h);
     filtered.allocate(w, h);
 
-    findHue = 85;
+    findHue = 255;
 
     initDisplayMode();
     initReadMode();
@@ -35,7 +36,7 @@ void testApp::update() {
     switch (mode) {
 
     case CC_MODE_READ:
-        cout << "READ" << endl;
+        // cout << "READ" << endl;
         if (movie.isFrameNew()) {
             cout << "FRAME IS NEW" << endl;
             // resized = rgb;
@@ -75,6 +76,7 @@ void testApp::draw() {
             ofTranslate(h, h-240);
             ofScale(0.25, 0.25);
             rgb.draw(0, 0);
+            filtered.draw(0, -240*4);
         }
         ofPopMatrix();
         rgb.getTextureReference().bind();
@@ -83,7 +85,7 @@ void testApp::draw() {
         break;
 
     case CC_MODE_DISPLAY:
-        cout << "DISPLAY" << endl;
+        // cout << "DISPLAY" << endl;
         drawCalibration(findHue);
         drawCircle();
         break;
@@ -107,12 +109,12 @@ void testApp::draw() {
 
 
     // //draw red circles for found blobs
-    // for (int i = 0; i < contours.nBlobs; i++) {
-    //     ofCircle(contours.blobs[i].centroid.x, contours.blobs[i].centroid.y, 20);
-    // }
-    // if (centerMarks.x != -1) {
-    //     ofCircle(centerMarks.x, centerMarks.y, 5);
-    // }
+    for (int i = 0; i < contours.nBlobs; i++) {
+        ofCircle(contours.blobs[i].centroid.x, contours.blobs[i].centroid.y, 20);
+    }
+    if (centerMarks.x != -1) {
+        ofCircle(centerMarks.x, centerMarks.y, 5);
+    }
 
     // ofSetColor(255);
     // rgb.getTextureReference().bind();
@@ -123,13 +125,15 @@ void testApp::draw() {
 }
 
 void testApp::drawCalibration(int hueValue) {
-    ofColor col = ofColor::fromHsb(hueValue, 255, 255);
+    // ofColor col = ofColor::fromHsb(hueValue, 255, 255);
+    ofColor col = ofColor(0, hueValue, 0);
     ofSetColor(col);
-    int radius = 20;
-    ofCircle(ofPoint(50, 50), radius);
-    ofCircle(ofPoint(50, h-50), radius);
-    ofCircle(ofPoint(h-50, 50), radius);
-    ofCircle(ofPoint(h-50, h-50), radius);
+    int radius = 40;
+    int offset = 40;
+    ofCircle(ofPoint(offset, offset), radius);
+    ofCircle(ofPoint(offset, h-offset), radius);
+    ofCircle(ofPoint(h-offset, offset), radius);
+    ofCircle(ofPoint(h-offset, h-offset), radius);
 }
 
 void testApp::drawCircle() {
@@ -145,17 +149,24 @@ void testApp::thresholdByHue(int hueValue) {
     rgb.mirror(false, true);
 
     //duplicate rgb
-    hsb = rgb;
+    // hsb = rgb;
 
     //convert to hsb
-    hsb.convertRgbToHsv();
+    // hsb.convertRgbToHsv();
 
     //store the three channels as grayscale images
-    hsb.convertToGrayscalePlanarImages(hue, sat, bri);
+    // hsb.convertToGrayscalePlanarImages(hue, sat, bri);
 
     //filter image based on the hue value were looking for
     for (int i = 0; i < w * h; i++) {
-        filtered.getPixels()[i] = ofInRange(hue.getPixels()[i], hueValue - 30, hueValue + 30) ? 255 : 0;
+        if ((rgb.getPixels()[i*3+1] > 100) && (rgb.getPixels()[i*3] < 100) && (rgb.getPixels()[i*3+2] < 100)) {
+            filtered.getPixels()[i] = 255;
+        } else {
+            filtered.getPixels()[i] = 0;
+        }
+
+        // cout << filtered.getPixels()[w*h-1] << endl;
+        // filtered.getPixels()[i] = ofInRange(hue.getPixels()[i], hueValue - 30, hueValue + 30) ? 255 : 0;
     }
     filtered.flagImageChanged();
 }
@@ -212,6 +223,7 @@ void testApp::sortCentroids(ofxCvContourFinder &contours) {
         findCenterMarks(contours);
     } else {
         centerMarks.x = -1;   // otherwise set center to -1
+        return;
     }
     sourcePoints.clear();
     for (int i = 0; i < contours.nBlobs; i++) {
