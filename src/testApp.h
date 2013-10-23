@@ -9,6 +9,7 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxQuadWarp.h"
+//#include "ofxARToolkitPlus.h"
 
 
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
