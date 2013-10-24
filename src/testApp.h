@@ -75,9 +75,6 @@ public:
     /* ARToolKitPlus class */
     ofxARToolkitPlus artk;
     int threshold;
-	
-    /* The four corners of the image */
-//    vector<ofPoint> displayImageCorners;
     
 };
 
