@@ -19,8 +19,9 @@ struct anglePoint { // a datatype that contains centroids its angle to the cente
 };
 
 
-class testApp : public ofBaseApp{
+class testApp : public ofBaseApp {
 public:
+    
     void setup();
     void update();
     void draw();

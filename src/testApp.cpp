@@ -32,7 +32,7 @@ void testApp::setup() {
     initReadMode();
     
     artk.setup(w, h);
-    artk.setUndistortionMode(1);
+    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
 	artk.setThreshold(threshold);
 }
 
@@ -42,9 +42,9 @@ void testApp::update() {
     if (movie.isFrameNew()) {
         if (movie.isFrameNew()) {
             rgb.setFromPixels(movie.getPixels(), w, h);
-//            rgb.mirror(false, true);
         }
     }
+    
     movie.update();
     
     switch (mode) {
@@ -113,19 +113,18 @@ void testApp::draw() {
         int myIndex = artk.getMarkerIndex(1);
         ofDrawBitmapString(ofToString(artk.getNumDetectedMarkers()), w-40, 40);
         if (myIndex >= 0) {
-            cout << "DETECTED" << endl;
             // TODO - this should happen only after some time period
             isCalibrated = true;
-            mode = CC_MODE_READ;
+//            mode = CC_MODE_READ;
             
             // Get the corners
             vector<ofPoint> corners;
-            artk.getDetectedMarkerBorderCorners(myIndex, corners);
+            artk.getDetectedMarkerOrderedBorderCorners(myIndex, corners);
             
             sourcePoints.clear();
             sourcePoints.push_back(ofVec2f(corners[0].x, corners[0].y));
-            sourcePoints.push_back(ofVec2f(corners[1].x, corners[1].y));
             sourcePoints.push_back(ofVec2f(corners[3].x, corners[3].y));
+            sourcePoints.push_back(ofVec2f(corners[1].x, corners[1].y));
             sourcePoints.push_back(ofVec2f(corners[2].x, corners[2].y));
 
             updateMesh();
@@ -250,11 +249,15 @@ void testApp::keyPressed(int key) {
     switch (key) {
 
     case '1':
-        mode = CC_MODE_DISPLAY;
+        if (isCalibrated) {
+            mode = CC_MODE_DISPLAY;
+        }
         break;
 
     case '2':
-        mode = CC_MODE_READ;
+        if (isCalibrated) {
+            mode = CC_MODE_READ;
+        }
         break;
             
     case '3':
