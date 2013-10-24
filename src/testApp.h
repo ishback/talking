@@ -3,8 +3,8 @@
 #ifndef _TEST_APP
 #define _TEST_APP
 
-#define CC_MODE_DISPLAY = 1
-#define CC_MODE_READ = 2
+#define CC_MODE_DISPLAY 1
+#define CC_MODE_READ 2
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
