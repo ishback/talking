@@ -6,6 +6,7 @@
 #define CC_MODE_DISPLAY 1
 #define CC_MODE_READ 2
 #define CC_CALIBRATE 3
+#define CC_MODE_THRESHOLD 4
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
@@ -59,9 +60,12 @@ public:
     ofxCvGrayscaleImage grayImage, grayThres;
     ofxCvContourFinder contours;
     ofPoint centerMarks;
-
-    ofImage             img;
+    
+    ofImage             grayOfImage;
+    ofImage             colorOfImage;
     ofMesh              mesh;
+    
+    ofFbo   fbo;
     
     int w,h;
     int findHue;

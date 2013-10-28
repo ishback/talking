@@ -23,8 +23,11 @@ void testApp::setup() {
     
     //reserve memory for cv images
     rgb.allocate(w, h);
+    colorOfImage.allocate(h, h, OF_IMAGE_COLOR);
 	grayImage.allocate(w, h);
-	grayThres.allocate(w, h);
+	grayThres.allocate(h, h);
+    grayOfImage.allocate(h, h, OF_IMAGE_GRAYSCALE);
+    fbo.allocate(h, h);
     
     resized.allocate(w, h);
 
@@ -65,6 +68,33 @@ void testApp::update() {
         // Pass in the new image pixels to artk
         artk.update(grayImage.getPixels());
         break;
+            
+    case CC_MODE_THRESHOLD:
+        
+            ofPushMatrix();
+        {
+            ofTranslate(h, h-240);
+            ofScale(0.25, 0.25);
+            rgb.draw(0, 0);
+        }
+            ofPopMatrix();
+            fbo.begin();
+            
+            rgb.getTextureReference().bind();
+            mesh.draw();
+            rgb.getTextureReference().unbind();
+            
+            fbo.end();
+            
+            fbo.readToPixels(colorOfImage.getPixelsRef());
+            colorOfImage.update();
+            grayOfImage = colorOfImage;
+            grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
+            grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
+            grayThres.threshold(127);
+            
+            
+        break;
     }
     
 
@@ -77,7 +107,7 @@ void testApp::draw() {
 
     switch (mode) {
 
-    case CC_MODE_READ:
+    case CC_MODE_READ:{
         ofPushMatrix();
         {
             ofTranslate(h, h-240);
@@ -85,16 +115,20 @@ void testApp::draw() {
             rgb.draw(0, 0);
         }
         ofPopMatrix();
-        rgb.getTextureReference().bind();
+            grayImage = rgb;
+            grayThres = grayImage;
+        grayThres.getTextureReference().bind();
         mesh.draw();
-        rgb.getTextureReference().unbind();
+        grayThres.getTextureReference().unbind();
         break;
+    }
 
-    case CC_MODE_DISPLAY:
+    case CC_MODE_DISPLAY:{
         drawCircle();
         break;
+    }
             
-    case CC_CALIBRATE:
+    case CC_CALIBRATE:{
         drawCalibration();
             
         ofPushMatrix();
@@ -144,6 +178,14 @@ void testApp::draw() {
         }
 
         break;
+    }
+    
+    case CC_MODE_THRESHOLD: {
+                
+        grayThres.draw(0,0);
+
+        break;
+        }
     }
 
 }
@@ -263,6 +305,10 @@ void testApp::keyPressed(int key) {
     case '3':
         mode = CC_CALIBRATE;
         isCalibrated = false;
+        break;
+            
+    case '4':
+        mode = CC_MODE_THRESHOLD;
         break;
     }
 
