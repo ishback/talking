@@ -3,10 +3,7 @@
 #ifndef _TEST_APP
 #define _TEST_APP
 
-#define CC_MODE_DISPLAY 1
-#define CC_MODE_READ 2
-#define CC_CALIBRATE 3
-#define CC_MODE_THRESHOLD 4
+
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
@@ -22,6 +19,14 @@ struct anglePoint { // a datatype that contains centroids its angle to the cente
 
 class testApp : public ofBaseApp {
 public:
+    
+    enum CC_MODES {
+        CC_MODE_DISPLAY,
+        CC_MODE_READ,
+        CC_MODE_CALIBRATE,
+        CC_MODE_THRESHOLD,
+        CC_MODE_CONTOURS
+    };
     
     void setup();
     void update();
@@ -59,7 +64,7 @@ public:
     ofxCvColorImage rgb, resized;
     ofxCvGrayscaleImage grayImage, grayThres;
     ofxCvContourFinder contours;
-    ofPoint centerMarks;
+    float blobArea;
     
     ofImage             grayOfImage;
     ofImage             colorOfImage;

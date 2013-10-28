@@ -10,10 +10,10 @@ void testApp::setup() {
 
     w = ofGetWidth();
     h = ofGetHeight();
-    centerMarks.x = -1;
+    blobArea = 0;
     threshold = 85;
 
-    mode = CC_CALIBRATE;
+    mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
 
     movie.initGrabber(w, h, true);
@@ -61,7 +61,7 @@ void testApp::update() {
         
         break;
         
-    case CC_CALIBRATE:
+    case CC_MODE_CALIBRATE:
         // convert our camera image to grayscale
         grayImage = rgb;
         
@@ -95,6 +95,38 @@ void testApp::update() {
             
             
         break;
+            
+        case CC_MODE_CONTOURS:
+            ofPushMatrix();
+            {
+            ofTranslate(h, h-240);
+            ofScale(0.25, 0.25);
+            rgb.draw(0, 0);
+            }
+            ofPopMatrix();
+            fbo.begin();
+            
+            rgb.getTextureReference().bind();
+            mesh.draw();
+            rgb.getTextureReference().unbind();
+            
+            fbo.end();
+            
+            fbo.readToPixels(colorOfImage.getPixelsRef());
+            colorOfImage.update();
+            grayOfImage = colorOfImage;
+            grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
+            grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
+            grayThres.threshold(127);
+            
+            contours.findContours(grayThres, 100, w*h/2, 1, false);
+            
+            if (contours.nBlobs) {
+                blobArea = contours.blobs[0].area;
+            }
+
+            
+            break;
     }
     
 
@@ -126,7 +158,7 @@ void testApp::draw() {
         break;
     }
             
-    case CC_CALIBRATE:{
+    case CC_MODE_CALIBRATE:{
         drawCalibration();
             
         ofPushMatrix();
@@ -184,6 +216,19 @@ void testApp::draw() {
 
         break;
         }
+            
+    case CC_MODE_CONTOURS: {
+        
+//        grayThres.draw(0,0);
+        ofSetColor(255);
+        ofFill();
+        if (contours.nBlobs) {
+            float radius = sqrt(blobArea/2);
+            ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, radius);
+        }
+        
+        break;
+    }
     }
 
 }
@@ -223,64 +268,6 @@ void testApp::initReadMode() {
 //--------------------------------------------------------------
 void testApp::mousePressed(int x, int y, int button) {
 
-    //calculate local mouse x,y in image
-//    int mx = x % w;
-//    int my = y % h;
-//
-//    //get hue value on mouse position
-//    findHue = hue.getPixels()[my * w + mx];
-}
-
-//--------------------------------------------------------------
-void testApp::findCenterMarks(ofxCvContourFinder &contours) {
-    int xAve = 0;
-    int yAve = 0;
-    for (int i = 0; i < contours.nBlobs; i++) {
-        xAve += contours.blobs[i].centroid.x;
-        yAve += contours.blobs[i].centroid.y;
-    }
-    xAve = xAve / contours.nBlobs;
-    yAve = yAve / contours.nBlobs;
-    centerMarks.set(xAve, yAve);
-}
-
-void testApp::sortCentroids(ofxCvContourFinder &contours) {
-    //contours.findContours(flat, 20, w*h/2, 4, false);
-    if (contours.nBlobs == 4) { // find center if we have 4 blobs
-        findCenterMarks(contours);
-    } else {
-        centerMarks.x = -1;   // otherwise set center to -1
-        return;
-    }
-    sourcePoints.clear();
-    for (int i = 0; i < contours.nBlobs; i++) {
-        anglePoint aP;
-        aP.centroid = contours.blobs[i].centroid;
-        aP.angle = getAngle(contours.blobs[i].centroid, centerMarks);
-
-        blobCenters.push_back(aP);
-    }
-    ofSort(blobCenters, byAngle);
-
-    sourcePoints.push_back(blobCenters[1].centroid);
-    sourcePoints.push_back(blobCenters[2].centroid);
-    sourcePoints.push_back(blobCenters[0].centroid);
-    sourcePoints.push_back(blobCenters[3].centroid);
-}
-
-//--------------------------------------------------------------
-float testApp::getAngle(ofPoint &p1, ofPoint &p2) {
-
-    float a = atan2(p2.y - p1.y, p1.x - p2.x);
-    //a = (a+TWO_PI)%(TWO_PI);
-    if (a < 0) a = a + 2 * PI;
-    return a;
-
-}
-
-//--------------------------------------------------------------
-bool testApp::byAngle(const anglePoint &a, const anglePoint &b) {
-    return a.angle < b.angle;
 }
 
 //--------------------------------------------------------------
@@ -301,12 +288,16 @@ void testApp::keyPressed(int key) {
         break;
             
     case '3':
-        mode = CC_CALIBRATE;
+        mode = CC_MODE_CALIBRATE;
         isCalibrated = false;
         break;
             
     case '4':
         mode = CC_MODE_THRESHOLD;
+        break;
+    
+    case '5':
+        mode = CC_MODE_CONTOURS;
         break;
     }
 
