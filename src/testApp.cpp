@@ -107,7 +107,7 @@ void testApp::draw() {
 
     switch (mode) {
 
-    case CC_MODE_READ:{
+    case CC_MODE_READ:{        
         ofPushMatrix();
         {
             ofTranslate(h, h-240);
@@ -115,11 +115,9 @@ void testApp::draw() {
             rgb.draw(0, 0);
         }
         ofPopMatrix();
-            grayImage = rgb;
-            grayThres = grayImage;
-        grayThres.getTextureReference().bind();
+        rgb.getTextureReference().bind();
         mesh.draw();
-        grayThres.getTextureReference().unbind();
+        rgb.getTextureReference().unbind();
         break;
     }
 
