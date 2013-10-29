@@ -25,7 +25,8 @@ public:
         CC_MODE_READ,
         CC_MODE_CALIBRATE,
         CC_MODE_THRESHOLD,
-        CC_MODE_CONTOURS
+        CC_MODE_CONTOURS,
+        CC_MODE_PROGRESS_BAR
     };
     
     void setup();
@@ -55,6 +56,10 @@ public:
     
     void drawCalibration();
     void drawCircle();
+    void drawRGB();
+    void rgbToFbo();
+    void fboToColorWarp();
+    void colorWarpToGrayThres();
 
     vector<anglePoint> blobCenters;
     
@@ -67,12 +72,13 @@ public:
     float blobArea;
     
     ofImage             grayOfImage;
-    ofImage             colorOfImage;
+    ofImage             colorWarp;
     ofMesh              mesh;
     
     ofFbo   fbo;
     
     int w,h;
+    int wWin; //width of the square window
     int findHue;
     unsigned char * pixels;
     vector < ofVec2f > sourcePoints;
@@ -80,10 +86,14 @@ public:
     
     int mode;
     bool isCalibrated;
-    
-    /* ARToolKitPlus class */
+
     ofxARToolkitPlus artk;
     int threshold;
+    float factor;
+    int barLength;
+    int barHeight;
+    int barMineCurrent;
+    int barOtherCurrent;
     
 };
 

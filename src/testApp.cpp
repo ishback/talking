@@ -10,8 +10,15 @@ void testApp::setup() {
 
     w = ofGetWidth();
     h = ofGetHeight();
+    wWin = h;
     blobArea = 0;
-    threshold = 85;
+    threshold = 127;
+    factor = 0;
+    
+    barLength = wWin - 200;
+    barHeight = 40;
+    barMineCurrent = 0;
+    barOtherCurrent = 0;
 
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
@@ -23,7 +30,7 @@ void testApp::setup() {
     
     //reserve memory for cv images
     rgb.allocate(w, h);
-    colorOfImage.allocate(h, h, OF_IMAGE_COLOR);
+    colorWarp.allocate(h, h, OF_IMAGE_COLOR);
 	grayImage.allocate(w, h);
 	grayThres.allocate(h, h);
     grayOfImage.allocate(h, h, OF_IMAGE_GRAYSCALE);
@@ -48,6 +55,7 @@ void testApp::update() {
         }
     }
     
+    factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
     movie.update();
     
     switch (mode) {
@@ -71,60 +79,42 @@ void testApp::update() {
             
     case CC_MODE_THRESHOLD:
         
-            ofPushMatrix();
-        {
-            ofTranslate(h, h-240);
-            ofScale(0.25, 0.25);
-            rgb.draw(0, 0);
-        }
-            ofPopMatrix();
-            fbo.begin();
             
-            rgb.getTextureReference().bind();
-            mesh.draw();
-            rgb.getTextureReference().unbind();
-            
-            fbo.end();
-            
-            fbo.readToPixels(colorOfImage.getPixelsRef());
-            colorOfImage.update();
-            grayOfImage = colorOfImage;
-            grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
-            grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
-            grayThres.threshold(127);
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
             
             
         break;
             
         case CC_MODE_CONTOURS:
-            ofPushMatrix();
-            {
-            ofTranslate(h, h-240);
-            ofScale(0.25, 0.25);
-            rgb.draw(0, 0);
-            }
-            ofPopMatrix();
-            fbo.begin();
-            
-            rgb.getTextureReference().bind();
-            mesh.draw();
-            rgb.getTextureReference().unbind();
-            
-            fbo.end();
-            
-            fbo.readToPixels(colorOfImage.getPixelsRef());
-            colorOfImage.update();
-            grayOfImage = colorOfImage;
-            grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
-            grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
-            grayThres.threshold(127);
+
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
             
             contours.findContours(grayThres, 100, w*h/2, 1, false);
             
             if (contours.nBlobs) {
-                blobArea = contours.blobs[0].area;
+                blobArea = contours.blobs[0].area * factor;
+                //cout << blobArea << endl;
             }
 
+            
+            break;
+            
+        case CC_MODE_PROGRESS_BAR:
+            
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
+            
+            contours.findContours(grayThres, 100, w*h/2, 1, false);
+            
+            if (contours.nBlobs) {
+                blobArea = contours.blobs[0].area * factor;
+            }
+            
             
             break;
     }
@@ -140,13 +130,7 @@ void testApp::draw() {
     switch (mode) {
 
     case CC_MODE_READ:{        
-        ofPushMatrix();
-        {
-            ofTranslate(h, h-240);
-            ofScale(0.25, 0.25);
-            rgb.draw(0, 0);
-        }
-        ofPopMatrix();
+        drawRGB();
         rgb.getTextureReference().bind();
         mesh.draw();
         rgb.getTextureReference().unbind();
@@ -161,15 +145,8 @@ void testApp::draw() {
     case CC_MODE_CALIBRATE:{
         drawCalibration();
             
-        ofPushMatrix();
-        {
-            ofTranslate(h, h-240);
-            ofScale(0.25, 0.25);
-            rgb.draw(0, 0);
-            artk.draw(0, 0);
-        }
-        ofPopMatrix();
-            
+        drawRGB();
+        
         // ARTK 2D stuff
         // See if marker ID '0' was detected
         // and draw blue corners on that marker only
@@ -211,7 +188,8 @@ void testApp::draw() {
     }
     
     case CC_MODE_THRESHOLD: {
-                
+        
+        drawRGB();
         grayThres.draw(0,0);
 
         break;
@@ -219,19 +197,69 @@ void testApp::draw() {
             
     case CC_MODE_CONTOURS: {
         
-//        grayThres.draw(0,0);
+        drawRGB();
         ofSetColor(255);
         ofFill();
         if (contours.nBlobs) {
-            float radius = sqrt(blobArea/2);
+            float radius = sqrt(blobArea/PI);
+            cout << radius << endl;
             ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, radius);
         }
         
         break;
+        }
+    case CC_MODE_PROGRESS_BAR: {
+        
+        drawRGB();
+        ofSetColor(255);
+        ofNoFill();
+        ofRect((wWin-barLength)/2, h/2 - barHeight/2, barLength, barHeight);
+        if (contours.nBlobs) {
+            barOtherCurrent = blobArea/barHeight;
+            barMineCurrent = barOtherCurrent;
+            ofFill();
+            ofRect((wWin-barLength)/2, h/2 - barHeight/2, ofClamp(barMineCurrent, 0, barLength), barHeight);
+        }
+        break;
     }
+            
     }
 
 }
+
+void testApp::drawRGB() {
+    ofPushMatrix();
+    {
+        ofTranslate(h, h-240);
+        ofScale(0.25, 0.25);
+        rgb.draw(0, 0);
+    }
+    ofPopMatrix();
+}
+
+void testApp::rgbToFbo() {
+    fbo.begin();
+    
+    rgb.getTextureReference().bind();
+    mesh.draw();
+    rgb.getTextureReference().unbind();
+    
+    fbo.end();
+}
+
+void testApp::fboToColorWarp() {
+    fbo.readToPixels(colorWarp.getPixelsRef());
+    colorWarp.update();
+}
+
+void testApp::colorWarpToGrayThres() {
+    grayOfImage = colorWarp;
+    grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
+    grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
+    grayThres.threshold(threshold);
+}
+
+
 
 void testApp::drawCalibration() {
     calibrationImage.draw(0, 0);
@@ -299,7 +327,12 @@ void testApp::keyPressed(int key) {
     case '5':
         mode = CC_MODE_CONTOURS;
         break;
+    
+    case '6':
+        mode = CC_MODE_PROGRESS_BAR;
+        break;
     }
+    
 
 }
 
