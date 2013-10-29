@@ -117,7 +117,7 @@ void testApp::update() {
             grayOfImage = colorOfImage;
             grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
             grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
-            grayThres.threshold(127);
+            grayThres.threshold(mouseX);
             
             contours.findContours(grayThres, 100, w*h/2, 1, false);
             
@@ -222,8 +222,9 @@ void testApp::draw() {
 //        grayThres.draw(0,0);
         ofSetColor(255);
         ofFill();
+        contours.draw();
         if (contours.nBlobs) {
-            float radius = sqrt(blobArea/2);
+            float radius = sqrt(blobArea/PI);
             ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, radius);
         }
         
