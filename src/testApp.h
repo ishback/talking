@@ -57,6 +57,7 @@ public:
     void drawCalibration();
     void drawCircle();
     void drawRGB();
+    void drawBlobFilled();
     void rgbToFbo();
     void fboToColorWarp();
     void colorWarpToGrayThres();
@@ -67,7 +68,7 @@ public:
     
     ofImage calibrationImage;
     ofxCvColorImage rgb, resized;
-    ofxCvGrayscaleImage grayImage, grayThres;
+    ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
     ofxCvContourFinder contours;
     float blobArea;
     

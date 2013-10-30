@@ -22,8 +22,13 @@ void testApp::setup() {
 
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
-
+    
+//    movie.listDevices();
+//    movie.setDeviceID(2);
+//    movie.setVerbose(true);
     movie.initGrabber(w, h, true);
+    
+    
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(h, h);
@@ -33,6 +38,7 @@ void testApp::setup() {
     colorWarp.allocate(h, h, OF_IMAGE_COLOR);
 	grayImage.allocate(w, h);
 	grayThres.allocate(h, h);
+    blobFilled.allocate(w, h);
     grayOfImage.allocate(h, h, OF_IMAGE_GRAYSCALE);
     fbo.allocate(h, h);
     
@@ -97,7 +103,6 @@ void testApp::update() {
             
             if (contours.nBlobs) {
                 blobArea = contours.blobs[0].area * factor;
-                //cout << blobArea << endl;
             }
 
             
@@ -111,16 +116,18 @@ void testApp::update() {
             
             contours.findContours(grayThres, 100, w*h/2, 1, false);
             
+            
+            blobFilled.set(0);
+            
+            
             if (contours.nBlobs) {
                 blobArea = contours.blobs[0].area * factor;
+                cout << contours.blobs[0].area << endl;
+                blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
             }
-            
             
             break;
     }
-    
-
-
 }
 
 //--------------------------------------------------------------
@@ -183,7 +190,7 @@ void testApp::draw() {
             }
             ofPopMatrix();
         }
-
+        
         break;
     }
     
@@ -211,6 +218,8 @@ void testApp::draw() {
     case CC_MODE_PROGRESS_BAR: {
         
         drawRGB();
+        drawBlobFilled();
+        contours.draw();
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin-barLength)/2, h/2 - barHeight/2, barLength, barHeight);
@@ -233,6 +242,16 @@ void testApp::drawRGB() {
         ofTranslate(h, h-240);
         ofScale(0.25, 0.25);
         rgb.draw(0, 0);
+    }
+    ofPopMatrix();
+}
+
+void testApp::drawBlobFilled() {
+    ofPushMatrix();
+    {
+        ofTranslate(h, h-480);
+        ofScale(0.25, 0.25);
+        blobFilled.draw(0, 0);
     }
     ofPopMatrix();
 }
