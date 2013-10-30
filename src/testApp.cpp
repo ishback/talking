@@ -19,10 +19,17 @@ void testApp::setup() {
     barHeight = 40;
     barMineCurrent = 0;
     barOtherCurrent = 0;
+    
+    // cursor
+    cursorOn = false;
+    cursorBlinkInterval = 500;
+    cursorLastSwitchTime = ofGetElapsedTimeMillis();
 
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
 
+    movie.listDevices();
+    movie.setDeviceID(0);
     movie.initGrabber(w, h, true);
 
     calibrationImage.loadImage("calibration.jpg");
@@ -30,10 +37,10 @@ void testApp::setup() {
     
     //reserve memory for cv images
     rgb.allocate(w, h);
-    colorWarp.allocate(h, h, OF_IMAGE_COLOR);
+    colorWarp.allocate(wWin, h, OF_IMAGE_COLOR);
 	grayImage.allocate(w, h);
-	grayThres.allocate(h, h);
-    grayOfImage.allocate(h, h, OF_IMAGE_GRAYSCALE);
+	grayThres.allocate(wWin, h);
+    grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
     fbo.allocate(h, h);
     
     resized.allocate(w, h);
@@ -117,6 +124,21 @@ void testApp::update() {
             
             
             break;
+            
+        case CC_MODE_CURSOR:
+            
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
+            
+            contours.findContours(grayThres, 100, 10000, 10, false);
+            
+            if (contours.nBlobs) {
+                cout << contours.nBlobs << " BLOBS" << endl;
+            }
+            
+            
+            break;
     }
     
 
@@ -174,7 +196,7 @@ void testApp::draw() {
             // ofPoint center = artk.getDetectedMarkerCenter(myIndex);
             ofPushMatrix();
             {
-                ofTranslate(h, h-240);
+                ofTranslate(wWin, h-240);
                 ofScale(0.25, 0.25);
                 ofSetHexColor(0x00FFff);
                 for(int i=0;i<corners.size();i++) {
@@ -207,7 +229,7 @@ void testApp::draw() {
         }
         
         break;
-        }
+    }
     case CC_MODE_PROGRESS_BAR: {
         
         drawRGB();
@@ -220,6 +242,22 @@ void testApp::draw() {
             ofFill();
             ofRect((wWin-barLength)/2, h/2 - barHeight/2, ofClamp(barMineCurrent, 0, barLength), barHeight);
         }
+        break;
+    }
+    case CC_MODE_CURSOR: {
+        
+        drawRGB();
+        ofSetColor(255);
+        ofFill();
+        if (ofGetElapsedTimeMillis() - cursorLastSwitchTime > cursorBlinkInterval) {
+            cursorOn = !cursorOn;
+            cursorLastSwitchTime = ofGetElapsedTimeMillis();
+        }
+        if (cursorOn) {
+            ofRect(100, 100, 10, 20);
+        }
+        
+        contours.draw();
         break;
     }
             
@@ -330,6 +368,10 @@ void testApp::keyPressed(int key) {
     
     case '6':
         mode = CC_MODE_PROGRESS_BAR;
+        break;
+            
+    case '7':
+        mode = CC_MODE_CURSOR;
         break;
     }
     

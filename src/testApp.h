@@ -26,7 +26,8 @@ public:
         CC_MODE_CALIBRATE,
         CC_MODE_THRESHOLD,
         CC_MODE_CONTOURS,
-        CC_MODE_PROGRESS_BAR
+        CC_MODE_PROGRESS_BAR,
+        CC_MODE_CURSOR
     };
     
     void setup();
@@ -94,6 +95,11 @@ public:
     int barHeight;
     int barMineCurrent;
     int barOtherCurrent;
+    
+    // Cursor
+    bool cursorOn;
+    int cursorBlinkInterval;
+    int cursorLastSwitchTime;
     
 };
 
