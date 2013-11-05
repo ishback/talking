@@ -11,6 +11,7 @@
 #include "ofxARToolkitPlus.h"
 
 
+
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
     ofPoint centroid;
     float angle;
@@ -21,12 +22,14 @@ class testApp : public ofBaseApp {
 public:
     
     enum CC_MODES {
-        CC_MODE_DISPLAY,
-        CC_MODE_READ,
-        CC_MODE_CALIBRATE,
-        CC_MODE_THRESHOLD,
-        CC_MODE_CONTOURS,
-        CC_MODE_PROGRESS_BAR
+        CC_MODE_DISPLAY, //it displays the 
+        CC_MODE_READ, //read from camera and display as is
+        CC_MODE_CALIBRATE, //shows marker and calibrates (finds mesh)
+        CC_MODE_THRESHOLD, //capture and display thresholded
+        CC_MODE_CONTOURS, //shows circle same area as captures blob
+        CC_MODE_PROGRESS_BAR,
+        CC_MODE_MOUSE_POINTER,
+        CC_MODE_PONG
     };
     
     void setup();
@@ -61,6 +64,14 @@ public:
     void rgbToFbo();
     void fboToColorWarp();
     void colorWarpToGrayThres();
+    void drawData();
+    void drawMouseCursor();
+    void drawBar();
+    
+    void checkWalls();
+    void checkBar();
+    void drawBall();
+    void checkIfBall();
 
     vector<anglePoint> blobCenters;
     
@@ -70,7 +81,7 @@ public:
     ofxCvColorImage rgb, resized;
     ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
     ofxCvContourFinder contours;
-    float blobArea;
+    float blobArea, lastArea;
     
     ofImage             grayOfImage;
     ofImage             colorWarp;
@@ -91,10 +102,19 @@ public:
     ofxARToolkitPlus artk;
     int threshold;
     float factor;
-    int barLength;
+    
+    int barLength; //progress bar
     int barHeight;
     int barMineCurrent;
     int barOtherCurrent;
+    
+    bool pongBall; // true if ball, false if bar.
+    ofVec2f pos, vel;
+    int ballRadius;
+    int yPosBar;
+    int xPosBar; 
+    int barPongHeight;
+    int barPongWidth;
     
 };
 
