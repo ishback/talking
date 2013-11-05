@@ -8,7 +8,7 @@
 #   The location of your root openFrameworks installation
 #       (default) OF_ROOT = ../../.. 
 ################################################################################
-# OF_ROOT = ../../..
+OF_ROOT = ../../..
 
 ################################################################################
 # PROJECT ROOT
@@ -26,6 +26,7 @@
 #   GTK is installed, one might test that here and create a variable to check. 
 ################################################################################
 # None
+PROJECT_ARCH = $(shell uname -m)
 
 ################################################################################
 # PROJECT EXTERNAL SOURCE PATHS
@@ -62,6 +63,15 @@
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 # PROJECT_EXCLUSIONS =
+# PROJECT_EXCLUSIONS += $(PROJECT_ROOT)/addons/ofxRPiCameraVideoGrabber%
+ifneq ($(PROJECT_ARCH),armv6l)
+	# Exclude the Raspberry Pi camera addon for any platform that isn't the Pi.
+	# PROJECT_EXCLUSIONS = $(OF_ROOT)/addons/ofxRPiCameraVideoGrabber%
+	ADDON_EXCLUSIONS = ofxRPiCameraVideoGrabber
+endif
+
+# $(info $(PROJECT_EXCLUSIONS))
+
 
 ################################################################################
 # PROJECT LINKER FLAGS
@@ -106,6 +116,7 @@
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
 # PROJECT_CFLAGS = 
+# PROJECT_CFLAGS = -std=c++11
 
 ################################################################################
 # PROJECT OPTIMIZATION CFLAGS
@@ -140,4 +151,12 @@
 ################################################################################
 # PROJECT_CXX = 
 # PROJECT_CC = 
+ifeq ($(PROJECT_ARCH),armv6l)
+	# Explicitly use GCC 4.7 on Raspberry Pi.  This is necessary on Raspbian
+	# because the installed GCC version doesn't support C++11.
+	PROJECT_CXX = g++-4.7
+	PROJECT_CC = gcc-4.7
+endif
+
+
 APPNAME = talking

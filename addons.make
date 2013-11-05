@@ -1,3 +1,3 @@
 ofxOpenCv
-ofxQuadWarp
-ofxARToolkitPlus
+ofxARtoolkitPlus
+ofxRPiCameraVideoGrabber

@@ -7,9 +7,8 @@
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
-#include "ofxQuadWarp.h"
 #include "ofxARToolkitPlus.h"
-
+#include "VideoSource.h"
 
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
     ofPoint centroid;
@@ -26,7 +25,8 @@ public:
         CC_MODE_CALIBRATE,
         CC_MODE_THRESHOLD,
         CC_MODE_CONTOURS,
-        CC_MODE_PROGRESS_BAR
+        CC_MODE_PROGRESS_BAR,
+        CC_MODE_TEST
     };
     
     void setup();
@@ -34,7 +34,6 @@ public:
     void draw();
     
     void mousePressed(int x, int y, int button);
-    
     
     void keyPressed(int key);
     void keyReleased(int key);
@@ -64,7 +63,11 @@ public:
 
     vector<anglePoint> blobCenters;
     
-    ofVideoGrabber movie;
+    // ofVideoGrabber movie;
+    IVideoSource* movie;
+
+
+
     
     ofImage calibrationImage;
     ofxCvColorImage rgb, resized;
