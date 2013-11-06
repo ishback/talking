@@ -28,6 +28,7 @@ public:
         CC_MODE_CONTOURS, //shows circle same area as captures blob
         CC_MODE_PROGRESS_BAR,
         CC_MODE_MOUSE_POINTER,
+        CC_MODE_CURSOR,
         CC_MODE_PONG
     };
     
@@ -72,6 +73,8 @@ public:
     void drawBall();
     void checkIfBall();
 
+    void updateBlink();
+
     vector<anglePoint> blobCenters;
     
     ofVideoGrabber movie;
@@ -107,6 +110,19 @@ public:
     int barMineCurrent;
     int barOtherCurrent;
     
+    // Cursor
+    bool cursorOn;
+    int cursorBlinkInterval;
+    int cursorLastSwitchTime;
+
+    float blinkFreq;
+    int blinkCount;
+    int blobStable;
+    int blobEnergy;
+    bool blobsOnLastFrame;
+    bool blinkOn;
+    int lastBlinkTime;
+
     bool pongBall; // true if ball, false if bar.
     ofVec2f pos, vel;
     int ballRadius;
