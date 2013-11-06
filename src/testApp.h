@@ -73,6 +73,8 @@ public:
     void drawBall();
     void checkIfBall();
 
+    void updateBlink();
+
     vector<anglePoint> blobCenters;
     
     ofVideoGrabber movie;
@@ -112,6 +114,14 @@ public:
     bool cursorOn;
     int cursorBlinkInterval;
     int cursorLastSwitchTime;
+
+    float blinkFreq;
+    int blinkCount;
+    int blobStable;
+    int blobEnergy;
+    bool blobsOnLastFrame;
+    bool blinkOn;
+    int lastBlinkTime;
 
     bool pongBall; // true if ball, false if bar.
     ofVec2f pos, vel;
