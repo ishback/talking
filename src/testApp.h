@@ -7,7 +7,6 @@
 
 #include "ofMain.h"
 #include "ofxOpenCv.h"
-#include "ofxQuadWarp.h"
 #include "ofxARToolkitPlus.h"
 
 

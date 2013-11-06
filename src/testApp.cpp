@@ -55,10 +55,10 @@ void testApp::setup() {
     artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
 	artk.setThreshold(threshold);
     
-    pongBall = true;
-    yPosBar = h - 40;
-    barPongWidth = 100;
-    barPongHeight = 20;
+    // pongBall = false;
+    yPosBar = h - 80;
+    barPongWidth = 300;
+    barPongHeight = 40;
     ballRadius = 50;
     pos.set(wWin/2, h/2);
     vel.set(6, 10);
@@ -109,7 +109,7 @@ void testApp::update() {
             fboToColorWarp();
             colorWarpToGrayThres();
             
-            contours.findContours(grayThres, 100, w*h/2, 1, false);
+            contours.findContours(grayThres, 1000, w*h, 1, false);
             cout << contours.nBlobs << "  ";
             //blobFilled.set(0);
             //blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
@@ -139,7 +139,7 @@ void testApp::update() {
             fboToColorWarp();
             colorWarpToGrayThres();
             
-            contours.findContours(grayThres, 100, w*h/2, 1, false);
+            contours.findContours(grayThres, 1000, w*h, 1, false);
             blobFilled.set(0);
             
             if (contours.nBlobs) {
@@ -156,7 +156,7 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
     
-        contours.findContours(grayThres, 50, w*h/2, 1, false);
+        contours.findContours(grayThres, 50, w*h, 1, false);
         blobFilled.set(0);
         if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
@@ -170,7 +170,7 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
         
-        contours.findContours(grayThres, 100, w*h, 1, false);
+        contours.findContours(grayThres, 1000, w*h, 1, false);
         blobFilled.set(0);
         if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
@@ -181,10 +181,11 @@ void testApp::update() {
             pos += vel;
             checkWalls();
             checkBar();
-            xPosBar = mouseX; //just for testing
+            // xPosBar = mouseX; //just for testing
+            xPosBar = contours.blobs[0].centroid.x;
         } else {
-            xPosBar = mouseX;
-            //xPosBar = contours.blobs[0].centroid.x;
+            // xPosBar = mouseX;
+            xPosBar = contours.blobs[0].centroid.x;
         }
         break;
     }
@@ -308,8 +309,11 @@ void testApp::draw() {
     case CC_MODE_PONG: {
         
         if (pongBall) {
+            drawData();
+            drawRGB();
+            drawBlobFilled();
             drawBall();
-            drawBar(); // just for testing
+            // drawBar(); // just for testing
             
         } else {
             drawData();
@@ -327,11 +331,19 @@ void testApp::draw() {
 void testApp::checkIfBall() {
     if (contours.nBlobs){
         float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
+        float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
         // we compare the area of blob to area of bounding box. we could also compare the ratio between height and width of the bounding box.
-        if (contours.blobs[0].area > areaBoundingBox*0.85){ //it sees the bar, set to Ball.
-            pongBall = true;
+        // if (contours.blobs[0].area > areaBoundingBox*0.85){ //it sees the bar, set to Ball.
+        //     pongBall = true;
             
-        } else if (contours.blobs[0].area < areaBoundingBox*0.85){ // it's sees a ball, set to Bar
+        // } else if (contours.blobs[0].area < areaBoundingBox*0.85){ // it's sees a ball, set to Bar
+        //     pongBall = false;
+        // }
+        if (ratio > 1.5) { 
+            //it sees the bar, set to Ball.
+            pongBall = true;
+        } else { 
+            // it's sees a ball, set to Bar
             pongBall = false;
         }
     }
@@ -352,8 +364,8 @@ void testApp::checkWalls() {
         pos.y = 0 + ballRadius;
         vel.y = -vel.y;
         cout << "here3" << endl;
-    } else if (pos.y + ballRadius > yPosBar - barPongHeight/2){
-        pos.y = yPosBar/2 ;
+    } else if (pos.y + ballRadius > h){
+        pos.y = h - ballRadius;
         vel.y = -vel.y;
         cout << "here4" << endl;
     }
@@ -377,6 +389,7 @@ void testApp::checkBar() {
 }
 
 void testApp::drawBall() {
+    ofSetColor(255);
     ofCircle(pos.x, pos.y, ballRadius);
 }
 
