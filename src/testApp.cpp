@@ -8,7 +8,6 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
 
-
     w = ofGetWidth();
     h = ofGetHeight();
     wWin = h;
