@@ -8,32 +8,37 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
 
+
     w = ofGetWidth();
     h = ofGetHeight();
     wWin = h;
     blobArea = 0;
     threshold = 127;
-    factor = 0;
+    factor = 1;
+    lastArea = 0;
     
     barLength = wWin - 200;
-    barHeight = 40;
+    barHeight = barLength/20;
     barMineCurrent = 0;
     barOtherCurrent = 0;
-    
+
     // cursor
     cursorOn = false;
     cursorBlinkInterval = 500;
     cursorLastSwitchTime = ofGetElapsedTimeMillis();
 
+    ofSetLineWidth(1);
+
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
 
-    movie.listDevices();
-    movie.setDeviceID(0);
     movie.initGrabber(w, h, true);
+    
+    
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(h, h);
+    // calibrationImage.mirror(1, 0); //uncomment when using a mirror.
     
     //reserve memory for cv images
     rgb.allocate(w, h);
@@ -51,18 +56,24 @@ void testApp::setup() {
     artk.setup(w, h);
     artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
 	artk.setThreshold(threshold);
+    
+    // pongBall = false;
+    yPosBar = h - 80;
+    barPongWidth = 300;
+    barPongHeight = 40;
+    ballRadius = 50;
+    pos.set(wWin/2, h/2);
+    vel.set(6, 10);
 }
 
 //--------------------------------------------------------------
 void testApp::update() {
 
     if (movie.isFrameNew()) {
-        if (movie.isFrameNew()) {
-            rgb.setFromPixels(movie.getPixels(), w, h);
-        }
+        rgb.setFromPixels(movie.getPixels(), w, h);
     }
     
-    factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
+    
     movie.update();
     
     switch (mode) {
@@ -94,55 +105,109 @@ void testApp::update() {
             
         break;
             
-        case CC_MODE_CONTOURS:
+    case CC_MODE_CONTOURS:
 
             rgbToFbo();
             fboToColorWarp();
             colorWarpToGrayThres();
             
-            contours.findContours(grayThres, 100, w*h/2, 1, false);
+            contours.findContours(grayThres, 1000, w*h, 1, false);
+            cout << contours.nBlobs << "  ";
+            //blobFilled.set(0);
+            //blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
             
             if (contours.nBlobs) {
-                blobArea = contours.blobs[0].area * factor;
-                //cout << blobArea << endl;
+                if (blobArea!=0){
+                    lastArea = blobArea;
+                        
+                        blobArea = contours.blobs[0].area;
+                        factor = ((lastArea - blobArea) / lastArea)/ 2 + 1;
+                        //factor = (blobArea - lastArea) / 2;
+                    
+                    blobArea = blobArea * factor;
+                    //blobArea -= factor;
+                    cout << lastArea << "  " << blobArea << endl;
+                } else if (blobArea==0){
+                    blobArea = contours.blobs[0].area;
+                    cout << "here" << blobArea << endl;
+                }
             }
+            
+            break;
+            
+    case CC_MODE_PROGRESS_BAR:
+            
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
+            
+            contours.findContours(grayThres, 1000, w*h, 1, false);
+            blobFilled.set(0);
+            
+            if (contours.nBlobs) {
+                factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
+                blobArea = contours.blobs[0].area * factor;
+                blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
+            }
+            
+            break;
 
             
-            break;
-            
-        case CC_MODE_PROGRESS_BAR:
-            
-            rgbToFbo();
-            fboToColorWarp();
-            colorWarpToGrayThres();
-            
-            contours.findContours(grayThres, 100, w*h/2, 1, false);
-            
-            if (contours.nBlobs) {
-                blobArea = contours.blobs[0].area * factor;
-            }
-            
-            
-            break;
-            
-        case CC_MODE_CURSOR:
-            
-            rgbToFbo();
-            fboToColorWarp();
-            colorWarpToGrayThres();
-            
-            contours.findContours(grayThres, 100, 10000, 10, false);
-            
-            if (contours.nBlobs) {
-                cout << contours.nBlobs << " BLOBS" << endl;
-            }
-            
-            
-            break;
-    }
+    case CC_MODE_CURSOR:
+        
+        rgbToFbo();
+        fboToColorWarp();
+        colorWarpToGrayThres();
+        
+        contours.findContours(grayThres, 100, 10000, 10, false);
+        
+        if (contours.nBlobs) {
+            cout << contours.nBlobs << " BLOBS" << endl;
+        }
+        
+        
+        break;
+
     
-
-
+    case CC_MODE_MOUSE_POINTER:
+    
+        rgbToFbo();
+        fboToColorWarp();
+        colorWarpToGrayThres();
+    
+        contours.findContours(grayThres, 50, w*h, 1, false);
+        blobFilled.set(0);
+        if (contours.nBlobs) {
+            blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
+        }
+    
+        break;
+            
+    case CC_MODE_PONG:
+        
+        rgbToFbo();
+        fboToColorWarp();
+        colorWarpToGrayThres();
+        
+        contours.findContours(grayThres, 1000, w*h, 1, false);
+        blobFilled.set(0);
+        if (contours.nBlobs) {
+            blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
+        }
+        checkIfBall(); //checks the area of the blob compared to the bounding box to identofy if it's a circle or a rectangle.
+            
+        if (pongBall){
+            pos += vel;
+            checkWalls();
+            checkBar();
+            // xPosBar = mouseX; //just for testing
+            xPosBar = contours.blobs[0].centroid.x;
+        } else {
+            // xPosBar = mouseX;
+            xPosBar = contours.blobs[0].centroid.x;
+        }
+        break;
+    }
 }
 
 //--------------------------------------------------------------
@@ -151,7 +216,7 @@ void testApp::draw() {
 
     switch (mode) {
 
-    case CC_MODE_READ:{        
+    case CC_MODE_READ:{
         drawRGB();
         rgb.getTextureReference().bind();
         mesh.draw();
@@ -191,9 +256,6 @@ void testApp::draw() {
             sourcePoints.push_back(ofVec2f(corners[2].x, corners[2].y));
 
             updateMesh();
-            
-            // Can also get the center like this:
-            // ofPoint center = artk.getDetectedMarkerCenter(myIndex);
             ofPushMatrix();
             {
                 ofTranslate(wWin, h-240);
@@ -201,11 +263,12 @@ void testApp::draw() {
                 ofSetHexColor(0x00FFff);
                 for(int i=0;i<corners.size();i++) {
                     ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
+                    
                 }
             }
             ofPopMatrix();
         }
-
+        
         break;
     }
     
@@ -215,24 +278,28 @@ void testApp::draw() {
         grayThres.draw(0,0);
 
         break;
-        }
+    }
             
     case CC_MODE_CONTOURS: {
-        
+          
+        drawData();
         drawRGB();
+        drawBlobFilled();
         ofSetColor(255);
         ofFill();
         if (contours.nBlobs) {
             float radius = sqrt(blobArea/PI);
-            cout << radius << endl;
+            cout << "radius " << radius << endl;
             ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, radius);
         }
-        
         break;
     }
+
     case CC_MODE_PROGRESS_BAR: {
         
         drawRGB();
+        drawBlobFilled();
+        
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin-barLength)/2, h/2 - barHeight/2, barLength, barHeight);
@@ -244,6 +311,7 @@ void testApp::draw() {
         }
         break;
     }
+
     case CC_MODE_CURSOR: {
         
         drawRGB();
@@ -261,9 +329,155 @@ void testApp::draw() {
         break;
     }
             
+    case CC_MODE_MOUSE_POINTER: {
+            
+        drawData();
+        drawRGB();
+        drawBlobFilled();
+        ofSetColor(255);
+        ofFill();
+        if (contours.nBlobs && contours.blobs[0].area < 100000) {
+            drawMouseCursor();
+        }
+        break;
+    }
+            
+    case CC_MODE_PONG: {
+        
+        if (pongBall) {
+            drawData();
+            drawRGB();
+            drawBlobFilled();
+            drawBall();
+            // drawBar(); // just for testing
+            
+        } else {
+            drawData();
+            drawRGB();
+            drawBlobFilled();
+            drawBar();
+            break;
+        }
+    }
+            
     }
 
 }
+
+void testApp::checkIfBall() {
+    if (contours.nBlobs){
+        float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
+        float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
+        // we compare the area of blob to area of bounding box. we could also compare the ratio between height and width of the bounding box.
+        // if (contours.blobs[0].area > areaBoundingBox*0.85){ //it sees the bar, set to Ball.
+        //     pongBall = true;
+            
+        // } else if (contours.blobs[0].area < areaBoundingBox*0.85){ // it's sees a ball, set to Bar
+        //     pongBall = false;
+        // }
+        if (ratio > 1.5) { 
+            //it sees the bar, set to Ball.
+            pongBall = true;
+        } else { 
+            // it's sees a ball, set to Bar
+            pongBall = false;
+        }
+    }
+}
+
+void testApp::checkWalls() {
+    
+    if (pos.x + ballRadius > wWin){
+        pos.x = wWin - ballRadius;
+        vel.x = -vel.x;
+        cout << "here1" << endl;
+    } else if (pos.x - ballRadius < 0){
+        pos.x = 0 + ballRadius;
+        vel.x = -vel.x;
+        cout << "here2" << endl;
+    }
+    if (pos.y - ballRadius < 0){
+        pos.y = 0 + ballRadius;
+        vel.y = -vel.y;
+        cout << "here3" << endl;
+    } else if (pos.y + ballRadius > h){
+        pos.y = h - ballRadius;
+        vel.y = -vel.y;
+        cout << "here4" << endl;
+    }
+}
+
+void testApp::checkBar() {
+    
+    if (pos.y + ballRadius > yPosBar - barHeight/2){
+        if ((pos.x > xPosBar + barPongWidth/2) || (pos.x < xPosBar - barPongWidth/2)){
+            pos.x = wWin/2;
+            pos.y = h/2;
+            cout << "OUT!!!" << endl;
+        } else {
+            pos.y = yPosBar - barPongHeight/2 - ballRadius;
+            vel.y = -vel.y;
+            cout << "good" << endl;
+        }
+        
+        
+    }
+}
+
+void testApp::drawBall() {
+    ofSetColor(255);
+    ofCircle(pos.x, pos.y, ballRadius);
+}
+
+void testApp::drawBar() {
+    
+    if (contours.nBlobs){
+        ofSetColor(255);
+        ofFill();
+        ofRect(xPosBar - barPongWidth/2, yPosBar - barPongHeight/2, barPongWidth, barPongHeight);
+    }
+}
+
+void testApp::drawMouseCursor() {
+    ofPushMatrix();
+    {
+        //ofTranslate(contours.blobs[0].centroid.x, contours.blobs[0].centroid.x);
+        ofTranslate(50, 50);
+        ofRotate(-30);
+        ofSetColor(255);
+        ofFill();
+        //ofTriangle(0, -12, -6, 4, 6, 4);
+        ofSetPolyMode(OF_POLY_WINDING_NONZERO);
+        ofBeginShape();
+            ofVertex(0, -16);
+            ofVertex(-8, 6);
+            ofVertex(0, 0);
+            ofVertex(8, 6);
+        ofEndShape();
+    }
+    ofPopMatrix();
+    
+}
+
+void testApp::drawData() {
+    ofPushMatrix();
+    {
+        ofTranslate(h + 50, 50);
+        ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
+        if (contours.nBlobs) {
+            ofDrawBitmapString("Area:           " + ofToString(contours.blobs[0].area), 0, 10);
+            ofDrawBitmapString("Corrected Area: " + ofToString(blobArea), 0, 20);
+            ofDrawBitmapString("Factor:         " + ofToString(factor), 0, 30);
+        }
+        
+        
+        
+        
+    }
+    ofPopMatrix();
+    
+}
+
 
 void testApp::drawRGB() {
     ofPushMatrix();
@@ -271,6 +485,26 @@ void testApp::drawRGB() {
         ofTranslate(h, h-240);
         ofScale(0.25, 0.25);
         rgb.draw(0, 0);
+        
+        
+    }
+    ofPopMatrix();
+
+}
+
+void testApp::drawBlobFilled() {
+    ofPushMatrix();
+    {
+        ofTranslate(h, h-480);
+        ofScale(0.25, 0.25);
+        ofSetColor(255);
+        blobFilled.draw(0, 0);
+        contours.draw();
+        ofSetColor(255, 0, 0);
+        ofFill();
+        if (contours.nBlobs) {
+            ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, 10);
+        }
     }
     ofPopMatrix();
 }
@@ -369,14 +603,24 @@ void testApp::keyPressed(int key) {
     case '6':
         mode = CC_MODE_PROGRESS_BAR;
         break;
-            
+    
     case '7':
+        mode = CC_MODE_MOUSE_POINTER;
+        break;
+            
+    case '8':
+        mode = CC_MODE_PONG;
+            pos.set(wWin/2, h/2);
+        break;
+    
+    case '9':
         mode = CC_MODE_CURSOR;
         break;
     }
-    
-
 }
+
+
+
 
 //--------------------------------------------------------------
 void testApp::keyReleased(int key) {

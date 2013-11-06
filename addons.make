@@ -1,3 +1,2 @@
 ofxOpenCv
-ofxQuadWarp
-ofxARToolkitPlus
+ofxARtoolkitPlus
