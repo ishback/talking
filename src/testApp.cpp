@@ -195,6 +195,8 @@ void testApp::update() {
         checkIfBall(); //checks the area of the blob compared to the bounding box to identofy if it's a circle or a rectangle.
 
         if (pongBall) {
+            vel.x = vel.x * 1.001;
+            vel.y = vel.y * 1.001;
             pos += vel;
             checkWalls();
             checkBar();
@@ -314,6 +316,7 @@ void testApp::draw() {
 
         drawData();
         drawRGB();
+        drawBlobFilled();
         ofSetColor(255);
         ofFill();
 
@@ -323,10 +326,10 @@ void testApp::draw() {
         }
 
         if (cursorOn) {
-            ofRect(100, 100, 10, 20);
+            ofRect(100, 100, 100, 200);
         }
 
-        contours.draw();
+        //contours.draw();
         break;
     }
 
