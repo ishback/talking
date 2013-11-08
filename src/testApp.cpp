@@ -76,8 +76,7 @@ void testApp::update() {
     if (movie.isFrameNew()) {
         rgb.setFromPixels(movie.getPixels(), w, h);
     }
-
-
+    
     movie.update();
 
     switch (mode) {
