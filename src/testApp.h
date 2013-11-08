@@ -131,6 +131,12 @@ public:
     int barPongHeight;
     int barPongWidth;
     
+    ofMesh mesh;
+    sense s;
+    input i;
+    message m;
+    
+    
 };
 
 #endif
