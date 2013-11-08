@@ -8,7 +8,10 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxARToolkitPlus.h"
-
+#include "calibration.h"
+#include "sense.h"
+#include "input.h"
+#include "message.h"
 
 
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
@@ -131,10 +134,10 @@ public:
     int barPongHeight;
     int barPongWidth;
     
-    ofMesh mesh;
-    sense s;
-    input i;
-    message m;
+    calibration calibration;
+    sense sense;
+    input input;
+    message message;
     
     
 };
