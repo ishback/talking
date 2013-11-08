@@ -34,9 +34,9 @@ void input::updateInput(ofxCvGrayscaleImage grayThres){
         setArea();
         setFactor();
         setRatio();
-        empty = false;
+        isEmpty = false;
     } else {
-        empty = true;
+        isEmpty = true;
     }
 
 }

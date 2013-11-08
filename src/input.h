@@ -7,20 +7,26 @@
 //
 #include "ofMain.h"
 #include "ofxOpenCv.h"
+
 #ifndef compChat_input_h
 #define compChat_input_h
 
-class input
-{
-public:
-    // Input has five parameters
+struct inputProperties {
     ofVec2f pos;
     float area; //significance?
     float factor;
     float ratio;
-    bool empty;
+    bool isEmpty;
+};
+
+class input
+{
+public:
     
-    // and two transitional variable
+    senseProperties s_p;
+    inputProperties i_p;
+    
+    // transitional variables
     ofxCvBlob blob;
     ofxCvContourFinder contours;
     
@@ -28,7 +34,7 @@ public:
     virtual ~input(){};
     
     void resetInput();
-    void updateInput( ofxCvGrayscaleImage grayThres);
+    void updateInput(senseProperties s_p);
     void setPos();
     void setArea();
     void setFactor();
