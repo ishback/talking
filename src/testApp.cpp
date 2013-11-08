@@ -325,7 +325,7 @@ void testApp::draw() {
         }
 
         if (cursorOn) {
-            ofRect(100, 100, 100, 200);
+            ofRect(100, 100, 20, 40);
         }
 
         //contours.draw();
