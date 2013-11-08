@@ -14,6 +14,9 @@
 		6A2488969F434D954484EB34 /* ofxQuadWarp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = FE46A77558C6A0433BA9878A /* ofxQuadWarp.cpp */; };
 		764E0498182AC7AF003ACE99 /* input.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 764E0497182AC7AF003ACE99 /* input.cpp */; };
 		764E049B182C2CFA003ACE99 /* message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 764E049A182C2CFA003ACE99 /* message.cpp */; };
+		764E04A5182D3F04003ACE99 /* calibration.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 764E049F182D3F04003ACE99 /* calibration.cpp */; };
+		764E04A6182D3F04003ACE99 /* sense.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 764E04A1182D3F04003ACE99 /* sense.cpp */; };
+		764E04A7182D3F04003ACE99 /* VideoSource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 764E04A3182D3F04003ACE99 /* VideoSource.cpp */; };
 		BBAB23CB13894F3D00AA2426 /* GLUT.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = BBAB23BE13894E4700AA2426 /* GLUT.framework */; };
 		D3301F6A0B43BB293ED97C1D /* ofxCvShortImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8A4DD23693DFAB8EC05FAA5D /* ofxCvShortImage.cpp */; };
 		E212C821D1064B92DD953A42 /* ofxCvHaarFinder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9A16CBF2E8CFE43AF54FE6F5 /* ofxCvHaarFinder.cpp */; };
@@ -109,6 +112,12 @@
 		764E0497182AC7AF003ACE99 /* input.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = input.cpp; sourceTree = "<group>"; };
 		764E0499182C2CEF003ACE99 /* message.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = message.h; sourceTree = "<group>"; };
 		764E049A182C2CFA003ACE99 /* message.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = message.cpp; sourceTree = "<group>"; };
+		764E049F182D3F04003ACE99 /* calibration.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = calibration.cpp; sourceTree = "<group>"; };
+		764E04A0182D3F04003ACE99 /* calibration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = calibration.h; sourceTree = "<group>"; };
+		764E04A1182D3F04003ACE99 /* sense.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sense.cpp; sourceTree = "<group>"; };
+		764E04A2182D3F04003ACE99 /* sense.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sense.h; sourceTree = "<group>"; };
+		764E04A3182D3F04003ACE99 /* VideoSource.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VideoSource.cpp; sourceTree = "<group>"; };
+		764E04A4182D3F04003ACE99 /* VideoSource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoSource.h; sourceTree = "<group>"; };
 		7673F0AA19794A4C9517CF14 /* ts.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ts.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/ts/ts.hpp; sourceTree = SOURCE_ROOT; };
 		7B6A03390302D5A2C9F0E4AB /* ofxCvFloatImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxCvFloatImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvFloatImage.cpp; sourceTree = SOURCE_ROOT; };
 		7C3D9C0EAC738ED2624D264B /* ml.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = ml.h; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv/ml.h; sourceTree = SOURCE_ROOT; };
@@ -599,6 +608,12 @@
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
 				E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */,
+				764E04A4182D3F04003ACE99 /* VideoSource.h */,
+				764E04A3182D3F04003ACE99 /* VideoSource.cpp */,
+				764E04A0182D3F04003ACE99 /* calibration.h */,
+				764E049F182D3F04003ACE99 /* calibration.cpp */,
+				764E04A2182D3F04003ACE99 /* sense.h */,
+				764E04A1182D3F04003ACE99 /* sense.cpp */,
 				764E0496182AC7A2003ACE99 /* input.h */,
 				764E0497182AC7AF003ACE99 /* input.cpp */,
 				764E0499182C2CEF003ACE99 /* message.h */,
@@ -864,6 +879,9 @@
 				FCC929A0181758A600185971 /* ofxARToolkitPlus.cpp in Sources */,
 				764E0498182AC7AF003ACE99 /* input.cpp in Sources */,
 				764E049B182C2CFA003ACE99 /* message.cpp in Sources */,
+				764E04A5182D3F04003ACE99 /* calibration.cpp in Sources */,
+				764E04A6182D3F04003ACE99 /* sense.cpp in Sources */,
+				764E04A7182D3F04003ACE99 /* VideoSource.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
