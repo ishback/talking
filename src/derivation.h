@@ -1,5 +1,5 @@
 //
-//  message.h
+//  derivation.h
 //  compChat
 //
 //  Created by ishac on 11/7/13.
@@ -7,11 +7,11 @@
 //
 
 #include "ofMain.h"
-#include "input.h"
-#ifndef compChat_message_h
-#define compChat_message_h
+#include "analysis.h"
+#ifndef compChat_derivation_h
+#define compChat_derivation_h
 
-struct messageProperties {
+struct derivationProperties {
     ofVec2f velocity;
     float areaGrowth;
     float frequency;
@@ -19,27 +19,27 @@ struct messageProperties {
     bool blinkOn;
 };
 
-class message
+class derivation
 {
 public:
     
-    inputProperties i_p;
-    messageProperties m_p;
+    analysisProperties a_p;
+    derivationProperties d_p;
     
 
     // transitional variables
-    int inputStable;
+    int analysisStable;
     int energy;
-    int storeInputs; //to increase robustness of message
-    vector <inputProperties> inputs;
+    int numStoredAnalyses; //to increase robustness of derivation
+    vector <analysisProperties> analyses;
     
     float lastBlinkTime;
     
-    message();
+    derivation();
     
     void resetInput();
-    void updateMessage(inputProperties i_p);
-    void storeInput();
+    void updateDerivation(analysisProperties &a_p);
+    void storeAnalysis();
     void setVelocity();
     void setAreaGrowth();
     void setFrequency();

@@ -1,14 +1,13 @@
 #pragma once
 
-#include "testApp.h"
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxARToolkitPlus.h"
 
 class calibration {
 public:
-    calibration();
-    ~calibration();
+//    calibration();
+//    ~calibration();
 
     void setup();
     void update();

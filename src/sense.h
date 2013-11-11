@@ -5,14 +5,15 @@
 #include "ofxARToolkitPlus.h"
 
 struct senseProperties {
-    
+    ofMesh mesh;
+    ofxCvGrayscaleImage grayThresh;
 };
 
 class sense
 {
 public:
-	sense();
-	~sense();
+//	sense();
+//	~sense();
 
 	void setup();
 	void update(ofMesh &mesh, unsigned char* pixels);
@@ -20,7 +21,10 @@ public:
 	void rgbToFbo(ofMesh &mesh);
 	void fboToColorWarp();
 	void colorWarpToGrayThresh();
-	ofxCvGrayscaleImage getGrayThresh();
+    senseProperties getSenseProperties();
+
+private:
+    senseProperties s_p;
     
     ofxCvColorImage rgb, resized;
     ofxCvGrayscaleImage grayImage, grayThres;

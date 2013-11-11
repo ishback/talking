@@ -10,8 +10,8 @@
 #include "ofxARToolkitPlus.h"
 #include "calibration.h"
 #include "sense.h"
-#include "input.h"
-#include "message.h"
+#include "analysis.h"
+#include "derivation.h"
 
 
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
@@ -136,8 +136,8 @@ public:
     
     calibration calibration;
     sense sense;
-    input input;
-    message message;
+    analysis analysis;
+    derivation derivation;
     
     
 };

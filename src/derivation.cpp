@@ -1,26 +1,26 @@
 //
-//  message.cpp
+//  derivation.cpp
 //  compChat
 //
 //  Created by ishac on 11/7/13.
 //
 //
 
-#include "message.h"
+#include "derivation.h"
 
-message::message(){
-    inputStable = 5;
-    storeInputs = 5;
+derivation::derivation(){
+    analysisStable = 5;
+    numStoredAnalyses = 5;
 }
 
 //------------------------------------------------------------
-void message::resetInput() {
+void derivation::resetInput() {
     
-    m_p.velocity.zero();
-    m_p.areaGrowth = 0;
-    m_p.frequency = 0;
-    m_p.blinkCount = 0;
-    m_p.blinkOn = false;
+    d_p.velocity.zero();
+    d_p.areaGrowth = 0;
+    d_p.frequency = 0;
+    d_p.blinkCount = 0;
+    d_p.blinkOn = false;
     
     energy = 0;
     lastBlinkTime = 0;
@@ -28,19 +28,22 @@ void message::resetInput() {
 
 
 //------------------------------------------------------------
-void message::updateMessage(senseProperties s_p) {
+void derivation::updateDerivation(analysisProperties &_a_p) {
     
-    storeInput();
-    if (!i_p.isEmpty) { // blob detected
+    a_p = _a_p;
+    
+    storeAnalysis();
+    
+    if (!a_p.isEmpty) { // blob detected
         energy += 1;
-        if (energy >= inputStable) {
-            energy = inputStable;
-            if (!m_p.blinkOn) {
-                m_p.blinkOn = true;
-                m_p.blinkCount += 1;
+        if (energy >= analysisStable) {
+            energy = analysisStable;
+            if (!d_p.blinkOn) {
+                d_p.blinkOn = true;
+                d_p.blinkCount += 1;
                 setFrequency();
             }
-            if (!inputs[inputs.size()-2].isEmpty)
+            if (!analyses[analyses.size()-2].isEmpty)
             setVelocity();
             setAreaGrowth();
         }
@@ -48,23 +51,23 @@ void message::updateMessage(senseProperties s_p) {
         energy -= 1;
         if (energy <= 0) {
             energy = 0;
-            m_p.blinkOn = false;
+            d_p.blinkOn = false;
         }
     }
 }
 
 
 //------------------------------------------------------------
-void message::storeInput() {
-    inputs.push_back(i_p);
-    if (inputs.size() > storeInputs){
-        inputs.erase(inputs.begin());
+void derivation::storeAnalysis() {
+    analyses.push_back(a_p);
+    if (analyses.size() > numStoredAnalyses){
+        analyses.erase(analyses.begin());
     }
 }
 
-void message::setVelocity() {
+void derivation::setVelocity() {
     
-    velocity = i_p.pos - inputs[inputs.size()-2].pos;
+    d_p.velocity = a_p.pos - analyses[analyses.size()-2].pos;
     
     // we can average the last 5 measured velocities if needed.
 //    if (inputStable && !i.isEmpty){
@@ -78,14 +81,14 @@ void message::setVelocity() {
     
 }
 
-void message::setAreaGrowth() {
+void derivation::setAreaGrowth() {
     // we can average the last 5 measured growths if needed.
-    m_p.areaGrowth = (i_p.area - inputs[inputs.size()-2].area) / inputs[inputs.size()-2].area;
+    d_p.areaGrowth = (a_p.area - analyses[analyses.size()-2].area) / analyses[analyses.size()-2].area;
 }
 
-void message::setFrequency() {
+void derivation::setFrequency() {
     // we can average the last 5 measured frecuencies if needed.
     float blinkPeriod = ofGetElapsedTimeMillis() - lastBlinkTime;
-    m_p.frequency = 1000 / blinkPeriod;
+    d_p.frequency = 1000 / blinkPeriod;
     lastBlinkTime = ofGetElapsedTimeMillis();
 }

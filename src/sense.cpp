@@ -25,6 +25,10 @@ void sense::update(ofMesh &mesh, unsigned char* pixels) {
     colorWarpToGrayThresh();
 }
 
+senseProperties sense::getSenseProperties() {
+    return s_p;
+}
+
 void sense::rgbToFbo(ofMesh &mesh) {
     fbo.begin();
 
@@ -45,8 +49,4 @@ void sense::colorWarpToGrayThresh() {
     grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
     grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
     grayThres.threshold(threshold);
-}
-
-ofxCvGrayscaleImage sense::getGrayThresh() {
-    return grayThres;
 }
