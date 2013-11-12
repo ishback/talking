@@ -185,15 +185,9 @@ void testApp::draw() {
         calibration.draw();
 //        return;
     } else {
-        sense.draw();
+        sense.getSenseProperties()->grayThresh.draw(0, 0);
     }
-    
-//    calibration.getCalibrationProperties()->mesh->draw();
-//    sense.getSenseProperties().grayThresh.draw(0, 0);
 
-
-    
-    
 
 //    switch (mode) {
 //

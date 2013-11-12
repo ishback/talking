@@ -61,7 +61,7 @@ void calibration::calibrate() {
     int myIndex = artk.getMarkerIndex(1);
     if (myIndex >= 0) {
         // TODO - this should happen only after some time period
-//        isCalibrated = true;
+        isCalibrated = true;
 
         // Get the corners
         setSourcePoints(myIndex);

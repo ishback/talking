@@ -55,7 +55,10 @@ public:
     int mode;
     bool debug;
     
+
     ofVideoGrabber movie;
+    unsigned char* pixels;
+    
     
     calibration calibration;
     sense sense;
@@ -87,7 +90,7 @@ public:
 
 //
 //    ofImage calibrationImage;
-//    ofxCvColorImage rgb, resized;
+    ofxCvColorImage rgb, resized;
 //    ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
 //    ofxCvContourFinder contours;
 //    float blobArea, lastArea;

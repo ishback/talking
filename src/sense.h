@@ -24,16 +24,17 @@ public:
 	void colorWarpToGrayThresh();
     senseProperties* getSenseProperties();
 
-private:
+//private:
 //    calibrationProperties* c_p;
     senseProperties* s_p;
     ofMesh* mesh;
     unsigned char* pixels;
     
-    ofxCvColorImage rgb, resized;
+//    ofImage rgb;
+    ofxCvColorImage rgb;
     ofxCvGrayscaleImage grayImage, grayThres;
     
-    ofImage             grayOfImage;
+    ofImage             grayOfImage, testImage;
     ofImage             colorWarp;
     
     ofFbo   fbo;

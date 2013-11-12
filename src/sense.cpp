@@ -23,6 +23,8 @@ void sense::setup(int _w, int _h, int _wWin) {
 void sense::update(calibrationProperties* c_p, unsigned char* pixels) {
     cout << "update" << endl;
     rgb.setFromPixels(pixels, w, h);
+    rgb.updateTexture();
+    
     mesh = c_p->mesh;
     rgbToFbo(c_p->mesh);
     fboToColorWarp();
@@ -30,21 +32,8 @@ void sense::update(calibrationProperties* c_p, unsigned char* pixels) {
     s_p->grayThresh.updateTexture();
 }
 
-void sense::update(ofMesh &mesh, unsigned char* pixels) {
-    rgbToFbo(&mesh);
-    fboToColorWarp();
-    colorWarpToGrayThresh();
-    s_p->grayThresh.updateTexture();
-
-}
-
 void sense::draw() {
-//    mesh->draw();
-//    s_p->grayThresh.draw(0, 0);
-//    colorWarp.draw(0,0);
-    fbo.draw(0, 0);
-//    rgb.draw(0, 0);
-    cout << "drawing" << endl;
+    colorWarp.draw(0,0);
 }
 
 senseProperties* sense::getSenseProperties() {
@@ -57,7 +46,7 @@ void sense::rgbToFbo(ofMesh* mesh) {
     rgb.getTextureReference().bind();
     mesh->draw();
     rgb.getTextureReference().unbind();
-
+    
     fbo.end();
 }
 
