@@ -31,7 +31,7 @@ void testApp::setup() {
     blobStable = 5;
     blinkOn = false;
     cursorBlinkInterval = 500; // my period
-    myBlinkPeriod = 300; // the other's period
+    myBlinkPeriod = 2000; // the other's period
 
     ofSetLineWidth(1);
 
@@ -336,7 +336,7 @@ void testApp::draw() {
         ofSetColor(255);
         ofFill();
         if (cursorOn) {
-            ofRect(100, 100, 20, 40);
+            ofRect(100, 100, 80, 160);
         }
 
         //contours.draw();
@@ -390,7 +390,7 @@ void testApp::updateBlink() {
 //            blobEnergy = blobStable;
             if (!blinkOn) {
                 blinkOn = true;
-                if (blinkCount > 0){
+                if (blinkCount > 1){
                     cursorBlinkInterval = ofGetElapsedTimeMillis() - lastBlinkTime;
                     blinkFreq = 1000 / cursorBlinkInterval;
                     lastBlinkTime = ofGetElapsedTimeMillis();
