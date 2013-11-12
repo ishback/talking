@@ -1,9 +1,5 @@
 #include "VideoSource.h"
 
-#include <iostream>
-
-using namespace std;
-
 VideoGrabberSource::VideoGrabberSource(int deviceId, int desiredWidth, int desiredHeight) {
 	// Set up and initialize the video grabber.
 	video.setDeviceID(deviceId);

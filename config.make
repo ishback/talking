@@ -151,12 +151,12 @@ endif
 ################################################################################
 # PROJECT_CXX = 
 # PROJECT_CC = 
-ifeq ($(PROJECT_ARCH),armv6l)
-	# Explicitly use GCC 4.7 on Raspberry Pi.  This is necessary on Raspbian
-	# because the installed GCC version doesn't support C++11.
-	PROJECT_CXX = g++-4.7
-	PROJECT_CC = gcc-4.7
-endif
+# ifeq ($(PROJECT_ARCH),armv6l)
+# 	# Explicitly use GCC 4.7 on Raspberry Pi.  This is necessary on Raspbian
+# 	# because the installed GCC version doesn't support C++11.
+# 	PROJECT_CXX = g++-4.7
+# 	PROJECT_CC = gcc-4.7
+# endif
 
 
 APPNAME = talking

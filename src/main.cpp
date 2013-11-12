@@ -1,7 +1,6 @@
 #include "ofMain.h"
 #include "testApp.h"
 #include "VideoSource.h"
-#include <memory>
 
 
 #ifdef TARGET_RASPBERRY_PI
@@ -53,6 +52,4 @@ int main( ){
 	testApp* app = new testApp();
 	configureApp(videoDeviceId, app);
 	ofRunApp(app);
-	ofRunApp(new testApp());
-
 }

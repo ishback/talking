@@ -143,7 +143,8 @@ void testApp::draw() {
 
     switch (mode) {
     case CC_MODE_TEST:
-        movie->draw(0, 0, 100, 100);
+        movie->draw(0, 0, w, h);
+        
         break;
 
     case CC_MODE_READ:
