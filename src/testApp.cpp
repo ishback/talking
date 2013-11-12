@@ -79,8 +79,7 @@ void testApp::update() {
     if (movie.isFrameNew()) {
         rgb.setFromPixels(movie.getPixels(), w, h);
     }
-
-
+    
     movie.update();
 
     switch (mode) {
@@ -337,7 +336,7 @@ void testApp::draw() {
         ofSetColor(255);
         ofFill();
         if (cursorOn) {
-            ofRect(100, 100, 100, 200);
+            ofRect(100, 100, 20, 40);
         }
 
         //contours.draw();
