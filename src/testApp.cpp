@@ -17,19 +17,21 @@ void testApp::setup() {
     lastArea = 0;
 
     barLength = wWin - 200;
-    barHeight = barLength / 20;
+    barHeight = barLength / 10;
     barMineCurrent = 0;
     barOtherCurrent = 0;
 
     // cursor
     cursorOn = false;
-    cursorBlinkInterval = 500;
+    
     cursorLastSwitchTime = ofGetElapsedTimeMillis();
     blinkCount = 0;
     blinkFreq = 0;
     blobEnergy = 0;
     blobStable = 5;
     blinkOn = false;
+    cursorBlinkInterval = 500; // my period
+    myBlinkPeriod = 300; // the other's period
 
     ofSetLineWidth(1);
 
@@ -51,6 +53,7 @@ void testApp::setup() {
     grayThres.allocate(wWin, h);
     grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
     fbo.allocate(h, h);
+    blobFilled.allocate(wWin, h);
 
     resized.allocate(w, h);
 
@@ -148,11 +151,13 @@ void testApp::update() {
         contours.findContours(grayThres, 1000, w * h, 1, false);
         blobFilled.set(0);
 
-        if (contours.nBlobs) {
-            factor = 1 + (h / 2 - float(mouseY)) / (h / 2) * 1;
-            blobArea = contours.blobs[0].area * factor;
-            blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
-        }
+        updateBlink();
+        
+//        if (contours.nBlobs) {
+//            factor = 1 + (h / 2 - float(mouseY)) / (h / 2) * 1;
+//            blobArea = contours.blobs[0].area * factor;
+//            blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the filled blob into the blobFilled image
+//        }
 
         break;
 
@@ -162,9 +167,16 @@ void testApp::update() {
         rgbToFbo();
         fboToColorWarp();
         colorWarpToGrayThres();
-
+        
+        if ((ofGetElapsedTimeMillis() - cursorLastSwitchTime) > myBlinkPeriod/2) {
+            cursorOn = !cursorOn;
+            cursorLastSwitchTime = ofGetElapsedTimeMillis();
+        }
         updateBlink();
-
+        //syncFreqBlinks();
+        
+            
+            
         break;
 
     case CC_MODE_MOUSE_POINTER:
@@ -247,7 +259,7 @@ void testApp::draw() {
 
             // Get the corners
             vector<ofPoint> corners;
-            artk.getDetectedMarkerOrderedBorderCorners(myIndex, corners);
+            artk.getDetectedMarkerOrderedCorners(myIndex, corners);
 
             sourcePoints.clear();
             sourcePoints.push_back(ofVec2f(corners[0].x, corners[0].y));
@@ -297,18 +309,23 @@ void testApp::draw() {
 
     case CC_MODE_PROGRESS_BAR: {
 
+        drawData();
         drawRGB();
         drawBlobFilled();
 
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        if (contours.nBlobs) {
-            barOtherCurrent = blobArea / barHeight;
-            barMineCurrent = barOtherCurrent;
-            ofFill();
-            ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
-        }
+        barMineCurrent = blinkCount * 3;
+        ofFill();
+        ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
+        
+//        if (contours.nBlobs) {
+//            barOtherCurrent = blobArea / barHeight;
+//            barMineCurrent = barOtherCurrent;
+//            ofFill();
+//            ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
+//        }
         break;
     }
 
@@ -319,12 +336,6 @@ void testApp::draw() {
         drawBlobFilled();
         ofSetColor(255);
         ofFill();
-
-        if (ofGetElapsedTimeMillis() - cursorLastSwitchTime > cursorBlinkInterval) {
-            cursorOn = !cursorOn;
-            cursorLastSwitchTime = ofGetElapsedTimeMillis();
-        }
-
         if (cursorOn) {
             ofRect(100, 100, 100, 200);
         }
@@ -368,29 +379,42 @@ void testApp::draw() {
 
 }
 
+
+
 void testApp::updateBlink() {
     contours.findContours(grayThres, 100, w * h, 1, false);
 
     if (contours.nBlobs) {
         // blob detected
-        blobEnergy += 1;
-        if (blobEnergy >= blobStable) {
-            blobEnergy = blobStable;
+//        blobEnergy += 1;
+//        if (blobEnergy >= blobStable) {
+//            blobEnergy = blobStable;
             if (!blinkOn) {
                 blinkOn = true;
+                if (blinkCount > 0){
+                    cursorBlinkInterval = ofGetElapsedTimeMillis() - lastBlinkTime;
+                    blinkFreq = 1000 / cursorBlinkInterval;
+                    lastBlinkTime = ofGetElapsedTimeMillis();
+                    syncFreqBlinks();
+                }
                 blinkCount += 1;
-
-                float blinkPeriod = ofGetElapsedTimeMillis() - lastBlinkTime;
-                blinkFreq = 1000 / blinkPeriod;
-                lastBlinkTime = ofGetElapsedTimeMillis();
             }
-        }
+//        }
     } else {
-        blobEnergy -= 1;
-        if (blobEnergy <= 0) {
-            blobEnergy = 0;
+//        blobEnergy -= 1;
+//        if (blobEnergy <= 0) {
+//            blobEnergy = 0;
             blinkOn = false;
-        }
+//        }
+    }
+}
+
+void testApp::syncFreqBlinks(){
+    int diffPeriods = myBlinkPeriod - cursorBlinkInterval;
+    if ((abs(diffPeriods) > 10) && !freqsSynched){ // We only adjust if the diff is big enough
+        myBlinkPeriod += (cursorBlinkInterval - myBlinkPeriod) / 2;
+    } else {
+        freqsSynched = true;
     }
 }
 
@@ -495,15 +519,17 @@ void testApp::drawData() {
         ofTranslate(h + 50, 50);
         ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
-        ofDrawBitmapString("blinkFreq:         " + ofToString(blinkFreq), 0, 50);
+        ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
+        ofDrawBitmapString("The others Period:  " + ofToString(cursorBlinkInterval), 0, 60);
         if (contours.nBlobs) {
             ofDrawBitmapString("Area:           " + ofToString(contours.blobs[0].area), 0, 10);
             ofDrawBitmapString("Corrected Area: " + ofToString(blobArea), 0, 20);
             ofDrawBitmapString("Factor:         " + ofToString(factor), 0, 30);
+            float progress = float(barMineCurrent)/float(barLength) * 100;
+            ofDrawBitmapString("Bar progress:   " + ofToString(progress) + "%", 0, 80);
         }
     }
     ofPopMatrix();
-
 }
 
 
@@ -630,6 +656,7 @@ void testApp::keyPressed(int key) {
 
     case '6':
         mode = CC_MODE_PROGRESS_BAR;
+            blinkCount = 0;
         break;
 
     case '7':
@@ -643,6 +670,7 @@ void testApp::keyPressed(int key) {
 
     case '9':
         mode = CC_MODE_CURSOR;
+        freqsSynched = false;
         break;
     }
 }

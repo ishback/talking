@@ -74,6 +74,7 @@ public:
     void checkIfBall();
 
     void updateBlink();
+    void syncFreqBlinks();
 
     vector<anglePoint> blobCenters;
     
@@ -121,7 +122,9 @@ public:
     int blobEnergy;
     bool blobsOnLastFrame;
     bool blinkOn;
+    bool freqsSynched;
     int lastBlinkTime;
+    int myBlinkPeriod;
 
     bool pongBall; // true if ball, false if bar.
     ofVec2f pos, vel;
