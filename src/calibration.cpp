@@ -1,61 +1,84 @@
 
 #include "calibration.h"
 
-void calibration::setup() {
+void calibration::setup(int _w, int _h, int _wWin) {
+    
+    wWin = _wWin;
+    w = _w;
+    h = _h;
+    threshold = 127;
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(wWin, h);
+    
+    colorImage.allocate(w, h);
+    grayImage.allocate(w, h);
 
     isCalibrated = false;
 
     artk.setup(w, h);
     artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
+    
+    c_p = new calibrationProperties;
+    c_p->mesh = new ofMesh;
 
+    //we can use 5 vertex to close it clockwise, or change the order to match Tri-strip sequence
+    c_p->mesh->setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+    
     setDestinationPoints();
 
 }
 
+void calibration::update(unsigned char* pixels) {
+    if (!isCalibrated) {
+        colorImage.setFromPixels(pixels, w, h);
+        grayImage = colorImage;
+        calibrate();
+    }
+}
+
+void calibration::draw() {
+    if (!isCalibrated) {
+        calibrationImage.draw(0, 0, wWin, h);
+        ofDrawBitmapString(ofToString(artk.getNumDetectedMarkers()), w - 40, 40);
+//        grayImage.draw(0, 0);
+        ofPushMatrix();
+        {
+            ofTranslate(wWin, h - 240);
+            ofScale(0.25, 0.25);
+            ofSetHexColor(0x00FFff);
+            for (int i = 0; i < corners.size(); i++) {
+                ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
+            }
+        }
+        ofPopMatrix();
+    }
+}
+
 void calibration::calibrate() {
+    artk.update(grayImage.getPixels());
     int myIndex = artk.getMarkerIndex(1);
-    ofDrawBitmapString(ofToString(artk.getNumDetectedMarkers()), w - 40, 40);
     if (myIndex >= 0) {
         // TODO - this should happen only after some time period
-        isCalibrated = true;
+//        isCalibrated = true;
 
         // Get the corners
-        vector<ofPoint> corners;
-        setSourcePoints(myIndex, corners);
+        setSourcePoints(myIndex);
         updateMesh();
-
-
-        // ofPushMatrix();
-        // {
-        //     ofTranslate(wWin, h - 240);
-        //     ofScale(0.25, 0.25);
-        //     ofSetHexColor(0x00FFff);
-        //     for (int i = 0; i < corners.size(); i++) {
-        //         ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
-
-        //     }
-        // }
-        // ofPopMatrix();
     }
     
 }
 
 void calibration::setDestinationPoints() {
-    // SETUP MESH
     destinationPoints.clear();
-    //we can use 5 vertex to close it clockwise, or change the order to match Tri-strip sequence
-    mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
     destinationPoints.push_back(ofVec3f(0, 0, 0));
     destinationPoints.push_back(ofVec3f(0, h, 0));
-    destinationPoints.push_back(ofVec3f(h, 0, 0));
-    destinationPoints.push_back(ofVec3f(h, h, 0));
+    destinationPoints.push_back(ofVec3f(wWin, 0, 0));
+    destinationPoints.push_back(ofVec3f(wWin, h, 0));
 }
 
-void calibration::setSourcePoints(int index, vector<ofPoint> &corners) {
+void calibration::setSourcePoints(int index) {
     artk.getDetectedMarkerOrderedBorderCorners(index, corners);
 
     sourcePoints.clear();
@@ -66,12 +89,12 @@ void calibration::setSourcePoints(int index, vector<ofPoint> &corners) {
 }
 
 void calibration::updateMesh() {
-    mesh.clearTexCoords();
-    mesh.clearVertices();
-    mesh.addTexCoords(sourcePoints); // origin coordinates
-    mesh.addVertices(destinationPoints);
+    c_p->mesh->clearTexCoords();
+    c_p->mesh->clearVertices();
+    c_p->mesh->addTexCoords(sourcePoints); // origin coordinates
+    c_p->mesh->addVertices(destinationPoints);
 }
 
-ofMesh calibration::getMesh() {
-	return mesh;
+calibrationProperties* calibration::getCalibrationProperties() {
+    return c_p;
 }

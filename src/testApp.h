@@ -13,7 +13,6 @@
 #include "analysis.h"
 #include "derivation.h"
 
-
 struct anglePoint { // a datatype that contains centroids its angle to the center of centroid
     ofPoint centroid;
     float angle;
@@ -50,94 +49,92 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    void findCenterMarks(ofxCvContourFinder & cnt);
-    static bool byAngle(const anglePoint &a, const anglePoint &b);
-    void sortCentroids(ofxCvContourFinder &contours);
-    float getAngle(ofPoint &p1, ofPoint &p2);
-
-    void initDisplayMode();
-    void initReadMode();
-    
-    void updateMesh();
-    
-    void drawCalibration();
-    void drawCircle();
-    void drawRGB();
-    void drawBlobFilled();
-    void rgbToFbo();
-    void fboToColorWarp();
-    void colorWarpToGrayThres();
-    void drawData();
-    void drawMouseCursor();
-    void drawBar();
-    
-    void checkWalls();
-    void checkBar();
-    void drawBall();
-    void checkIfBall();
-
-    void updateBlink();
-
-    vector<anglePoint> blobCenters;
-    
-    ofVideoGrabber movie;
-    
-    ofImage calibrationImage;
-    ofxCvColorImage rgb, resized;
-    ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
-    ofxCvContourFinder contours;
-    float blobArea, lastArea;
-    
-    ofImage             grayOfImage;
-    ofImage             colorWarp;
-    ofMesh              mesh;
-    
-    ofFbo   fbo;
     
     int w,h;
     int wWin; //width of the square window
-    int findHue;
-    unsigned char * pixels;
-    vector < ofVec2f > sourcePoints;
-    vector < ofVec3f > destinationPoints;
-    
     int mode;
-    bool isCalibrated;
-
-    ofxARToolkitPlus artk;
-    int threshold;
-    float factor;
+    bool debug;
     
-    int barLength; //progress bar
-    int barHeight;
-    int barMineCurrent;
-    int barOtherCurrent;
-    
-    // Cursor
-    bool cursorOn;
-    int cursorBlinkInterval;
-    int cursorLastSwitchTime;
-
-    float blinkFreq;
-    int blinkCount;
-    int blobStable;
-    int blobEnergy;
-    bool blobsOnLastFrame;
-    bool blinkOn;
-    int lastBlinkTime;
-
-    bool pongBall; // true if ball, false if bar.
-    ofVec2f pos, vel;
-    int ballRadius;
-    int yPosBar;
-    int xPosBar; 
-    int barPongHeight;
-    int barPongWidth;
+    ofVideoGrabber movie;
     
     calibration calibration;
     sense sense;
     analysis analysis;
     derivation derivation;
+   
+    
+//    
+//    void drawCalibration();
+//    void drawCircle();
+    void drawRGB();
+//    void drawBlobFilled();
+//    void rgbToFbo();
+//    void fboToColorWarp();
+//    void colorWarpToGrayThres();
+//    void drawData();
+//    void drawMouseCursor();
+//    void drawBar();
+//    
+//    void checkWalls();
+//    void checkBar();
+//    void drawBall();
+//    void checkIfBall();
+//
+//    void updateBlink();
+//
+//    vector<anglePoint> blobCenters;
+//    
+
+//
+//    ofImage calibrationImage;
+//    ofxCvColorImage rgb, resized;
+//    ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
+//    ofxCvContourFinder contours;
+//    float blobArea, lastArea;
+//    
+//    ofImage             grayOfImage;
+//    ofImage             colorWarp;
+    ofMesh              mesh;
+//
+//    ofFbo   fbo;
+//    
+//    int findHue;
+//    unsigned char * pixels;
+//    vector < ofVec2f > sourcePoints;
+//    vector < ofVec3f > destinationPoints;
+//    
+
+//    bool isCalibrated;
+//
+//    ofxARToolkitPlus artk;
+//    int threshold;
+//    float factor;
+//    
+//    int barLength; //progress bar
+//    int barHeight;
+//    int barMineCurrent;
+//    int barOtherCurrent;
+//    
+//    // Cursor
+//    bool cursorOn;
+//    int cursorBlinkInterval;
+//    int cursorLastSwitchTime;
+//
+//    float blinkFreq;
+//    int blinkCount;
+//    int blobStable;
+//    int blobEnergy;
+//    bool blobsOnLastFrame;
+//    bool blinkOn;
+//    int lastBlinkTime;
+//
+//    bool pongBall; // true if ball, false if bar.
+//    ofVec2f pos, vel;
+//    int ballRadius;
+//    int yPosBar;
+//    int xPosBar; 
+//    int barPongHeight;
+//    int barPongWidth;
     
     
 };

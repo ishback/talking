@@ -1,39 +1,61 @@
 
 #include "sense.h"
 
-void sense::setup() {
-    w = ofGetWidth();
-    h = ofGetHeight();
-    wWin = h;
+void sense::setup(int _w, int _h, int _wWin) {
+    w = _w;
+    h = _h;
+    wWin = _wWin;
+    
     threshold = 127;
+    
+    s_p = new senseProperties;
 
     //reserve memory for cv images
     rgb.allocate(w, h);
     colorWarp.allocate(wWin, h, OF_IMAGE_COLOR);
-    grayImage.allocate(w, h);
-    grayThres.allocate(wWin, h);
     grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
-    fbo.allocate(h, h);
 
-    resized.allocate(w, h);
+    s_p->grayThresh.allocate(wWin, h);
+
+    fbo.allocate(wWin, h);
+}
+
+void sense::update(calibrationProperties* c_p, unsigned char* pixels) {
+    cout << "update" << endl;
+    rgb.setFromPixels(pixels, w, h);
+    mesh = c_p->mesh;
+    rgbToFbo(c_p->mesh);
+    fboToColorWarp();
+    colorWarpToGrayThresh();
+    s_p->grayThresh.updateTexture();
 }
 
 void sense::update(ofMesh &mesh, unsigned char* pixels) {
-    rgb.setFromPixels(pixels, w, h);
-    rgbToFbo(mesh);
+    rgbToFbo(&mesh);
     fboToColorWarp();
     colorWarpToGrayThresh();
+    s_p->grayThresh.updateTexture();
+
 }
 
-senseProperties sense::getSenseProperties() {
+void sense::draw() {
+//    mesh->draw();
+//    s_p->grayThresh.draw(0, 0);
+//    colorWarp.draw(0,0);
+    fbo.draw(0, 0);
+//    rgb.draw(0, 0);
+    cout << "drawing" << endl;
+}
+
+senseProperties* sense::getSenseProperties() {
     return s_p;
 }
 
-void sense::rgbToFbo(ofMesh &mesh) {
+void sense::rgbToFbo(ofMesh* mesh) {
     fbo.begin();
 
     rgb.getTextureReference().bind();
-    mesh.draw();
+    mesh->draw();
     rgb.getTextureReference().unbind();
 
     fbo.end();
@@ -47,6 +69,6 @@ void sense::fboToColorWarp() {
 void sense::colorWarpToGrayThresh() {
     grayOfImage = colorWarp;
     grayOfImage.setImageType(OF_IMAGE_GRAYSCALE);
-    grayThres.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
-    grayThres.threshold(threshold);
+    s_p->grayThresh.setFromPixels(grayOfImage.getPixelsRef()); // From OF to CV
+    s_p->grayThresh.threshold(threshold);
 }
