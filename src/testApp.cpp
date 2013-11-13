@@ -8,8 +8,13 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
 
-    w = ofGetWidth();
-    h = ofGetHeight();
+    if (env == 0) {
+        w = ofGetWidth();
+        h = ofGetHeight();
+    } else {
+        w = 720;
+        h = 480;
+    }
     wWin = h;
     blobArea = 0;
     threshold = 127;
@@ -40,15 +45,14 @@ void testApp::setup() {
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
 
-    movie.initGrabber(w, h, true);
-
-
+//    movie.initGrabber(w, h, true);
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(h, h);
     // calibrationImage.mirror(1, 0); //uncomment when using a mirror.
 
     //reserve memory for cv images
+    fullSize.allocate(movie->getWidth(), movie->getHeight());
     rgb.allocate(w, h);
     colorWarp.allocate(wWin, h, OF_IMAGE_COLOR);
     grayImage.allocate(w, h);
@@ -56,8 +60,6 @@ void testApp::setup() {
     grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
     fbo.allocate(h, h);
     blobFilled.allocate(wWin, h);
-
-    resized.allocate(w, h);
 
     initDisplayMode();
     initReadMode();
@@ -77,12 +79,19 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
-
-    if (movie.isFrameNew()) {
-        rgb.setFromPixels(movie.getPixels(), w, h);
+    movie->update();
+    
+    if (movie->isFrameNew()) {
+        ofPixels pix = movie->getPixels();
+        fullSize.setFromPixels(pix);
+        rgb.scaleIntoMe(fullSize);
     }
     
-    movie.update();
+//    if (movie.isFrameNew()) {
+//        rgb.setFromPixels(movie.getPixels(), w, h);
+//    }
+//    
+//    movie.update();
 
     switch (mode) {
 

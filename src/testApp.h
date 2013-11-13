@@ -8,6 +8,7 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxARToolkitPlus.h"
+#include "VideoSource.h"
 
 
 
@@ -30,6 +31,11 @@ public:
         CC_MODE_MOUSE_POINTER,
         CC_MODE_CURSOR,
         CC_MODE_PONG
+    };
+    
+    enum ENV {
+        OSX,
+        RPI
     };
     
     void setup();
@@ -78,10 +84,14 @@ public:
 
     vector<anglePoint> blobCenters;
     
-    ofVideoGrabber movie;
+//    ofVideoGrabber movie;
+    IVideoSource* movie;
+    
+    // 0 or 1 depending on OSX or RPI
+    int env;
     
     ofImage calibrationImage;
-    ofxCvColorImage rgb, resized;
+    ofxCvColorImage rgb, fullSize;;
     ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
     ofxCvContourFinder contours;
     float blobArea, lastArea;
