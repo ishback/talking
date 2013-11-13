@@ -18,6 +18,8 @@ void testApp::setup() {
     camW = movie->getWidth();
     camH = movie->getHeight();
     
+    // get texture coords for po
+    
     wWin = h;
     blobArea = 0;
     threshold = 127;
@@ -49,6 +51,9 @@ void testApp::setup() {
     isCalibrated = false;
 
 //    movie.initGrabber(w, h, true);
+    
+    testImage.loadImage("night-city.jpg");
+//    testImage.resize(w, h);
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(wWin, h);
@@ -82,7 +87,7 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
-    threshold = ofMap(mouseY, 0, ofGetHeight(), 0, 255);
+//    threshold = ofMap(mouseY, 0, ofGetHeight(), 0, 255);
     movie->update();
     
     if (movie->isFrameNew()) {
@@ -103,10 +108,10 @@ void testApp::update() {
 
     case CC_MODE_READ:
         // cout << "READ" << endl;
-            rgbToFbo();
-            fboToColorWarp();
-            colorWarpToGrayThres();
-            adjustSensitivity();
+        rgbToFbo();
+        fboToColorWarp();
+        colorWarpToGrayThres();
+        adjustSensitivity();
 
         break;
 
@@ -253,10 +258,14 @@ void testApp::draw() {
 
     case CC_MODE_READ: {
         drawRGB();
-        rgb.getTextureReference().bind();
-        mesh.draw();
-        rgb.getTextureReference().unbind();
+//        rgb.getTextureReference().bind();
+//        mesh.draw();
+//        rgb.getTextureReference().unbind();
+//        testImage.getTextureReference().bind();
+//        mesh.draw();
+//        testImage.getTextureReference().unbind();
         drawData();
+        colorWarp.draw(0, 0, wWin, h);
         break;
     }
 
@@ -285,13 +294,11 @@ void testApp::draw() {
 
             // Get the corners
             vector<ofPoint> corners;
+            ofTexture texture = rgb.getTextureReference();
+            
             artk.getDetectedMarkerOrderedCorners(myIndex, corners);
-
-            sourcePoints.clear();
-            sourcePoints.push_back(ofVec2f(corners[0].x, corners[0].y));
-            sourcePoints.push_back(ofVec2f(corners[3].x, corners[3].y));
-            sourcePoints.push_back(ofVec2f(corners[1].x, corners[1].y));
-            sourcePoints.push_back(ofVec2f(corners[2].x, corners[2].y));
+            
+            setSourcePoints(texture, corners);
 
             updateMesh();
             
@@ -404,6 +411,19 @@ void testApp::draw() {
 
     }
 
+}
+
+void testApp::setSourcePoints(ofTexture &texture, vector<ofPoint> &corners) {
+    ofVec2f p0 = texture.getCoordFromPoint(corners[0].x, corners[0].y);
+    ofVec2f p3 = texture.getCoordFromPoint(corners[3].x, corners[3].y);
+    ofVec2f p1 = texture.getCoordFromPoint(corners[1].x, corners[1].y);
+    ofVec2f p2 = texture.getCoordFromPoint(corners[2].x, corners[2].y);
+    
+    sourcePoints.clear();
+    sourcePoints.push_back(p0);
+    sourcePoints.push_back(p3);
+    sourcePoints.push_back(p1);
+    sourcePoints.push_back(p2);
 }
 
 
@@ -641,8 +661,10 @@ void testApp::drawCircle() {
 void testApp::updateMesh() {
     mesh.clearTexCoords();
     mesh.clearVertices();
+    mesh.clearNormals();
     mesh.addTexCoords(sourcePoints); // origin coordinates
     mesh.addVertices(destinationPoints);
+    mesh.addNormals(normals);
 }
 
 void testApp::initDisplayMode() {
@@ -659,6 +681,11 @@ void testApp::initReadMode() {
     destinationPoints.push_back(ofVec3f(0, h, 0));
     destinationPoints.push_back(ofVec3f(wWin, 0, 0));
     destinationPoints.push_back(ofVec3f(wWin, h, 0));
+    
+    normals.push_back(ofVec3f(0, 0, 1));
+    normals.push_back(ofVec3f(0, 0, 1));
+    normals.push_back(ofVec3f(0, 0, 1));
+    normals.push_back(ofVec3f(0, 0, 1));
 }
 
 //--------------------------------------------------------------

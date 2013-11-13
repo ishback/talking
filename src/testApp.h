@@ -57,6 +57,8 @@ public:
     static bool byAngle(const anglePoint &a, const anglePoint &b);
     void sortCentroids(ofxCvContourFinder &contours);
     float getAngle(ofPoint &p1, ofPoint &p2);
+    
+    void setSourcePoints(ofTexture &texture, vector<ofPoint> &corners);
 
     void initDisplayMode();
     void initReadMode();
@@ -108,6 +110,7 @@ public:
     unsigned char * pixels;
     vector < ofVec2f > sourcePoints;
     vector < ofVec3f > destinationPoints;
+    vector <ofVec3f> normals;
     
     int mode;
     bool isCalibrated;
