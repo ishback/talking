@@ -30,8 +30,8 @@ void testApp::setup() {
     blobEnergy = 0;
     blobStable = 5;
     blinkOn = false;
-    cursorBlinkInterval = 500; // my period
-    myBlinkPeriod = 300; // the other's period
+    cursorBlinkInterval = 500; // the other's period
+    myBlinkPeriod = 1000; // my period
 
     ofSetLineWidth(1);
 
@@ -86,6 +86,10 @@ void testApp::update() {
 
     case CC_MODE_READ:
         // cout << "READ" << endl;
+            rgbToFbo();
+            fboToColorWarp();
+            colorWarpToGrayThres();
+            adjustSensitivity();
 
         break;
 
@@ -96,6 +100,8 @@ void testApp::update() {
     case CC_MODE_CALIBRATE:
         // convert our camera image to grayscale
         grayImage = rgb;
+            
+            
 
         // Pass in the new image pixels to artk
         artk.update(grayImage.getPixels());
@@ -232,6 +238,7 @@ void testApp::draw() {
         rgb.getTextureReference().bind();
         mesh.draw();
         rgb.getTextureReference().unbind();
+        drawData();
         break;
     }
 
@@ -244,6 +251,7 @@ void testApp::draw() {
         drawCalibration();
 
         drawRGB();
+        drawData();
 
         // ARTK 2D stuff
         // See if marker ID '0' was detected
@@ -336,7 +344,7 @@ void testApp::draw() {
         ofSetColor(255);
         ofFill();
         if (cursorOn) {
-            ofRect(100, 100, 20, 40);
+            ofRect(100, 100, 80, 160);
         }
 
         //contours.draw();
@@ -390,7 +398,7 @@ void testApp::updateBlink() {
 //            blobEnergy = blobStable;
             if (!blinkOn) {
                 blinkOn = true;
-                if (blinkCount > 0){
+                if (blinkCount > 1){
                     cursorBlinkInterval = ofGetElapsedTimeMillis() - lastBlinkTime;
                     blinkFreq = 1000 / cursorBlinkInterval;
                     lastBlinkTime = ofGetElapsedTimeMillis();
@@ -472,14 +480,27 @@ void testApp::checkBar() {
             vel.y = -vel.y;
             cout << "good" << endl;
         }
-
-
     }
 }
 
 void testApp::drawBall() {
     ofSetColor(255);
     ofCircle(pos.x, pos.y, ballRadius);
+}
+
+void testApp::adjustSensitivity() {
+    pixels = grayThres.getPixels();
+    float white, black;
+    for (int i=0; i < grayThres.width * grayThres.height; i++){
+        if (pixels[i] == 0){
+            black++;
+        } else if (pixels[i] == 255){
+            white++;
+        }
+    }
+    calibrationBWRatio = white / black;
+        
+    
 }
 
 void testApp::drawBar() {
@@ -520,6 +541,7 @@ void testApp::drawData() {
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
         ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
         ofDrawBitmapString("The others Period:  " + ofToString(cursorBlinkInterval), 0, 60);
+        ofDrawBitmapString("RATIO B/W:          " + ofToString(calibrationBWRatio), 0, 70);
         if (contours.nBlobs) {
             ofDrawBitmapString("Area:           " + ofToString(contours.blobs[0].area), 0, 10);
             ofDrawBitmapString("Corrected Area: " + ofToString(blobArea), 0, 20);

@@ -56,7 +56,7 @@ public:
     void initReadMode();
     
     void updateMesh();
-    
+    void adjustSensitivity();
     void drawCalibration();
     void drawCircle();
     void drawRGB();
@@ -101,6 +101,7 @@ public:
     
     int mode;
     bool isCalibrated;
+    float calibrationBWRatio;
 
     ofxARToolkitPlus artk;
     int threshold;
