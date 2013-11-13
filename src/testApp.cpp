@@ -30,8 +30,10 @@ void testApp::setup() {
     blobEnergy = 0;
     blobStable = 5;
     blinkOn = false;
+
     cursorBlinkInterval = 500; // the other's period
     myBlinkPeriod = 1000; // my period
+
 
     ofSetLineWidth(1);
 
