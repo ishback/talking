@@ -76,11 +76,12 @@ public:
     
     
     ofImage calibrationImage;
-    ofxCvColorImage rgb, resized;
+    ofxCvColorImage rgb, resized, fullSize;
     ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
     ofxCvContourFinder contours;
     float blobArea;
     
+//    ofImage             fullRgb;
     ofImage             grayOfImage;
     ofImage             colorWarp;
     ofMesh              mesh;

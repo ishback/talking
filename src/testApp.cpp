@@ -8,14 +8,14 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
 
-    if (env == 0) {
-        w = ofGetWidth();
-        h = ofGetHeight();
-    } else {
+//    if (env == 0) {
+//        w = ofGetWidth();
+//        h = ofGetHeight();
+//    } else {
         w = 720;
         h = 480;
-    }
-    
+//    }
+
     cout << w << ", " << h << endl;
     
     wWin = h;
@@ -42,8 +42,11 @@ void testApp::setup() {
     calibrationImage.resize(h, h);
 
     //reserve memory for cv images
+//    fullRgb.allocate(movie->getWidth(), movie->getHeight(), OF_IMAGE_COLOR);
     rgb.allocate(w, h);
-    colorWarp.allocate(h, h, OF_IMAGE_COLOR);
+    fullSize.allocate(movie->getWidth(), movie->getHeight());
+//    resized.allocate(<#int w#>, <#int h#>)
+//    colorWarp.allocate(h, h, OF_IMAGE_COLOR);
     grayImage.allocate(w, h);
     grayThres.allocate(h, h);
     blobFilled.allocate(w, h);
@@ -63,82 +66,89 @@ void testApp::setup() {
 //--------------------------------------------------------------
 void testApp::update() {
 
-    cout << env << endl;
+//    cout << env << endl;
     
     movie->update();
     
     if (movie->isFrameNew()) {
         ofPixels pix = movie->getPixels();
-        rgb.setFromPixels(pix.getPixels(), w, h);
+        fullSize.setFromPixels(pix);
+        rgb.scaleIntoMe(fullSize);
+//        cout << "pix w: " << pix.getWidth() << endl;
+//        cout << "pix h: " << pix.getHeight() << endl;
+//        fullRgb.setFromPixels(pix.getPixels(), movie->getWidth(), movie->getHeight(), OF_IMAGE_COLOR);
+//        fullRgb.crop(0, 0, w, h);
+//        rgb.setFromPixels(fullRgb.getPixels(), w, h);
+//        rgb.setRoiFromPixels(pix.getPixels(), w, h);
     }
 
 
-     factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
-
-     switch (mode) {
-
-     case CC_MODE_READ:
-         // cout << "READ" << endl;
-
-         break;
-
-     case CC_MODE_DISPLAY:
-
-         break;
-
-     case CC_MODE_CALIBRATE:
-         // convert our camera image to grayscale
-         grayImage = rgb;
-
-         // Pass in the new image pixels to artk
-         artk.update(grayImage.getPixels());
-         break;
-
-     case CC_MODE_THRESHOLD:
-
-
-             rgbToFbo();
-             fboToColorWarp();
-             colorWarpToGrayThres();
-
-
-         break;
-
-     case CC_MODE_CONTOURS:
-
-         rgbToFbo();
-         fboToColorWarp();
-         colorWarpToGrayThres();
-
-         contours.findContours(grayThres, 100, w*h/2, 1, false);
-
-         if (contours.nBlobs) {
-             blobArea = contours.blobs[0].area * factor;
-         }
-
-
-         break;
-
-     case CC_MODE_PROGRESS_BAR:
-
-         rgbToFbo();
-         fboToColorWarp();
-         colorWarpToGrayThres();
-
-         contours.findContours(grayThres, 100, w*h/2, 1, false);
-
-
-         blobFilled.set(0);
-
-
-         if (contours.nBlobs) {
-             blobArea = contours.blobs[0].area * factor;
-             cout << contours.blobs[0].area << endl;
-             blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
-         }
-
-         break;
-     }
+//     factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
+//
+//     switch (mode) {
+//
+//     case CC_MODE_READ:
+//         // cout << "READ" << endl;
+//
+//         break;
+//
+//     case CC_MODE_DISPLAY:
+//
+//         break;
+//
+//     case CC_MODE_CALIBRATE:
+//         // convert our camera image to grayscale
+//         grayImage = rgb;
+//
+//         // Pass in the new image pixels to artk
+//         artk.update(grayImage.getPixels());
+//         break;
+//
+//     case CC_MODE_THRESHOLD:
+//
+//
+//             rgbToFbo();
+//             fboToColorWarp();
+//             colorWarpToGrayThres();
+//
+//
+//         break;
+//
+//     case CC_MODE_CONTOURS:
+//
+//         rgbToFbo();
+//         fboToColorWarp();
+//         colorWarpToGrayThres();
+//
+//         contours.findContours(grayThres, 100, w*h/2, 1, false);
+//
+//         if (contours.nBlobs) {
+//             blobArea = contours.blobs[0].area * factor;
+//         }
+//
+//
+//         break;
+//
+//     case CC_MODE_PROGRESS_BAR:
+//
+//         rgbToFbo();
+//         fboToColorWarp();
+//         colorWarpToGrayThres();
+//
+//         contours.findContours(grayThres, 100, w*h/2, 1, false);
+//
+//
+//         blobFilled.set(0);
+//
+//
+//         if (contours.nBlobs) {
+//             blobArea = contours.blobs[0].area * factor;
+//             cout << contours.blobs[0].area << endl;
+//             blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
+//         }
+//
+//         break;
+//     }
 }
 
 //--------------------------------------------------------------
