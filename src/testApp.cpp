@@ -15,6 +15,9 @@ void testApp::setup() {
         w = 720;
         h = 480;
     }
+    camW = movie->getWidth();
+    camH = movie->getHeight();
+    
     wWin = h;
     blobArea = 0;
     threshold = 127;
@@ -48,24 +51,24 @@ void testApp::setup() {
 //    movie.initGrabber(w, h, true);
 
     calibrationImage.loadImage("calibration.jpg");
-    calibrationImage.resize(h, h);
+    calibrationImage.resize(wWin, h);
     // calibrationImage.mirror(1, 0); //uncomment when using a mirror.
 
     //reserve memory for cv images
-    fullSize.allocate(movie->getWidth(), movie->getHeight());
-    rgb.allocate(w, h);
+    fullSize.allocate(camW, camH);
+    rgb.allocate(camW, camH);
     colorWarp.allocate(wWin, h, OF_IMAGE_COLOR);
-    grayImage.allocate(w, h);
+    grayImage.allocate(camW, camH);
     grayThres.allocate(wWin, h);
     grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
-    fbo.allocate(h, h);
+    fbo.allocate(wWin, h);
     blobFilled.allocate(wWin, h);
 
     initDisplayMode();
     initReadMode();
 
-    artk.setup(w, h);
-    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
+    artk.setup(camW, camH);
+//    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
     // pongBall = false;
@@ -79,12 +82,15 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
+    threshold = ofMap(mouseY, 0, ofGetHeight(), 0, 255);
     movie->update();
     
     if (movie->isFrameNew()) {
         ofPixels pix = movie->getPixels();
-        fullSize.setFromPixels(pix);
-        rgb.scaleIntoMe(fullSize);
+        rgb.setFromPixels(pix);
+        rgb.updateTexture();
+//        fullSize.setFromPixels(pix);
+//        rgb.scaleIntoMe(fullSize);
     }
     
 //    if (movie.isFrameNew()) {
@@ -112,7 +118,8 @@ void testApp::update() {
         // convert our camera image to grayscale
         grayImage = rgb;
             
-            
+//            cout << grayImage.width << ", " << grayImage.height << endl;
+        
 
         // Pass in the new image pixels to artk
         artk.update(grayImage.getPixels());
@@ -261,8 +268,9 @@ void testApp::draw() {
     case CC_MODE_CALIBRATE: {
         drawCalibration();
 
-        drawRGB();
+//        drawRGB();
         drawData();
+//        artk.draw(h, h/2, 320, 240);
 
         // ARTK 2D stuff
         // See if marker ID '0' was detected
@@ -286,14 +294,15 @@ void testApp::draw() {
             sourcePoints.push_back(ofVec2f(corners[2].x, corners[2].y));
 
             updateMesh();
+            
             ofPushMatrix();
             {
                 ofTranslate(wWin, h - 240);
-                ofScale(0.25, 0.25);
-                ofSetHexColor(0x00FFff);
+                ofScale(0.5, 0.5);
+//                ofSetHexColor(0x00FFff);
                 for (int i = 0; i < corners.size(); i++) {
+                    cout << corners[i].x << ", " << corners[i].y << endl;
                     ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
-
                 }
             }
             ofPopMatrix();
@@ -568,10 +577,10 @@ void testApp::drawData() {
 void testApp::drawRGB() {
     ofPushMatrix();
     {
-        ofTranslate(h, h - 240);
+        ofTranslate(wWin, h - 240);
         ofScale(0.25, 0.25);
         rgb.draw(0, 0);
-
+//        grayImage.draw(0, 0);
 
     }
     ofPopMatrix();
@@ -645,10 +654,11 @@ void testApp::initReadMode() {
     destinationPoints.clear();
     //we can use 5 vertex to close it clockwise, or change the order to match Tri-strip sequence
     mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
+//    mesh.setMode(GL_TRIANGLE_STRIP);
     destinationPoints.push_back(ofVec3f(0, 0, 0));
     destinationPoints.push_back(ofVec3f(0, h, 0));
-    destinationPoints.push_back(ofVec3f(h, 0, 0));
-    destinationPoints.push_back(ofVec3f(h, h, 0));
+    destinationPoints.push_back(ofVec3f(wWin, 0, 0));
+    destinationPoints.push_back(ofVec3f(wWin, h, 0));
 }
 
 //--------------------------------------------------------------

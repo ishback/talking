@@ -97,12 +97,12 @@ public:
     float blobArea, lastArea;
     
     ofImage             grayOfImage;
-    ofImage             colorWarp;
+    ofImage             colorWarp, testImage;
     ofMesh              mesh;
     
     ofFbo   fbo;
     
-    int w,h;
+    int w,h,camW,camH;
     int wWin; //width of the square window
     int findHue;
     unsigned char * pixels;
