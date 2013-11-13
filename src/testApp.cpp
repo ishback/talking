@@ -8,8 +8,16 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
 
-    w = ofGetWidth();
-    h = ofGetHeight();
+    if (env == 0) {
+        w = ofGetWidth();
+        h = ofGetHeight();
+    } else {
+        w = 720;
+        h = 480;
+    }
+    
+    cout << w << ", " << h << endl;
+    
     wWin = h;
     blobArea = 0;
     threshold = 127;
@@ -55,95 +63,98 @@ void testApp::setup() {
 //--------------------------------------------------------------
 void testApp::update() {
 
+    cout << env << endl;
+    
     movie->update();
-
-    // if (movie->isFrameNew()) {
-    //     ofPixels pix = movie->getPixels();
-    //     rgb.setFromPixels(pix.getPixels(), w, h);
-    // }
-
-    // factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
-
-    // switch (mode) {
-
-    // case CC_MODE_READ:
-    //     // cout << "READ" << endl;
-
-    //     break;
-
-    // case CC_MODE_DISPLAY:
-
-    //     break;
-
-    // case CC_MODE_CALIBRATE:
-    //     // convert our camera image to grayscale
-    //     grayImage = rgb;
-
-    //     // Pass in the new image pixels to artk
-    //     artk.update(grayImage.getPixels());
-    //     break;
-
-    // case CC_MODE_THRESHOLD:
+    
+    if (movie->isFrameNew()) {
+        ofPixels pix = movie->getPixels();
+        rgb.setFromPixels(pix.getPixels(), w, h);
+    }
 
 
-    //         rgbToFbo();
-    //         fboToColorWarp();
-    //         colorWarpToGrayThres();
+     factor = 1 + (h/2 - float(mouseY))/(h/2) * 1;
+
+     switch (mode) {
+
+     case CC_MODE_READ:
+         // cout << "READ" << endl;
+
+         break;
+
+     case CC_MODE_DISPLAY:
+
+         break;
+
+     case CC_MODE_CALIBRATE:
+         // convert our camera image to grayscale
+         grayImage = rgb;
+
+         // Pass in the new image pixels to artk
+         artk.update(grayImage.getPixels());
+         break;
+
+     case CC_MODE_THRESHOLD:
 
 
-    //     break;
-
-    //     case CC_MODE_CONTOURS:
-
-    //         rgbToFbo();
-    //         fboToColorWarp();
-    //         colorWarpToGrayThres();
-
-    //         contours.findContours(grayThres, 100, w*h/2, 1, false);
-
-    //         if (contours.nBlobs) {
-    //             blobArea = contours.blobs[0].area * factor;
-    //         }
+             rgbToFbo();
+             fboToColorWarp();
+             colorWarpToGrayThres();
 
 
-    //         break;
+         break;
 
-    //     case CC_MODE_PROGRESS_BAR:
+     case CC_MODE_CONTOURS:
 
-    //         rgbToFbo();
-    //         fboToColorWarp();
-    //         colorWarpToGrayThres();
+         rgbToFbo();
+         fboToColorWarp();
+         colorWarpToGrayThres();
 
-    //         contours.findContours(grayThres, 100, w*h/2, 1, false);
+         contours.findContours(grayThres, 100, w*h/2, 1, false);
+
+         if (contours.nBlobs) {
+             blobArea = contours.blobs[0].area * factor;
+         }
 
 
-    //         blobFilled.set(0);
+         break;
+
+     case CC_MODE_PROGRESS_BAR:
+
+         rgbToFbo();
+         fboToColorWarp();
+         colorWarpToGrayThres();
+
+         contours.findContours(grayThres, 100, w*h/2, 1, false);
 
 
-    //         if (contours.nBlobs) {
-    //             blobArea = contours.blobs[0].area * factor;
-    //             cout << contours.blobs[0].area << endl;
-    //             blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
-    //         }
+         blobFilled.set(0);
 
-    //         break;
-    // }
+
+         if (contours.nBlobs) {
+             blobArea = contours.blobs[0].area * factor;
+             cout << contours.blobs[0].area << endl;
+             blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
+         }
+
+         break;
+     }
 }
 
 //--------------------------------------------------------------
 void testApp::draw() {
 
-    if (movie->isFrameNew()) {
-        ofPixels pix = movie->getPixels();
-        rgb.setFromPixels(pix.getPixels(), w, h);
-        cout << "new frame" << endl;
-    }
+//    if (movie->isFrameNew()) {
+//        ofPixels pix = movie->getPixels();
+//        rgb.setFromPixels(pix.getPixels(), w, h);
+//    }
 
     factor = 1 + (h / 2 - float(mouseY)) / (h / 2) * 1;
 
     switch (mode) {
     case CC_MODE_TEST:
-        movie->draw(0, 0, w, h);
+//        movie->draw(0, 0, w, h);
+        rgb.draw(0,0);
         
         break;
 

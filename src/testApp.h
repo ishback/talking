@@ -29,6 +29,11 @@ public:
         CC_MODE_TEST
     };
     
+    enum ENV {
+        OSX,
+        RPI
+    };
+    
     void setup();
     void update();
     void draw();
@@ -67,7 +72,8 @@ public:
     IVideoSource* movie;
 
 
-
+    int env;
+    
     
     ofImage calibrationImage;
     ofxCvColorImage rgb, resized;

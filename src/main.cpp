@@ -7,25 +7,24 @@
 
 // Setup default config for Raspberry Pi.
 void configureApp(int videoDeviceId, testApp* app) {
-	// const int videoWidth = 1080;
-	// const int videoHeight = 240;
-	const int screenWidth = 1024;
-	const int screenHeight = 768;
-
+	const int videoWidth = 1280;
+	const int videoHeight = 720;
+	const int screenWidth = 720;
+	const int screenHeight = 480;
+    
 	ofSetupOpenGL(screenWidth, screenHeight, OF_FULLSCREEN);
-
-	app->movie = new PiCameraSource(1080, 720);
+    app->env = app->RPI;
+	app->movie = new PiCameraSource(videoWidth, videoHeight);
 }
 
 #else
 
 // Setup default config for other platforms.
 void configureApp(int videoDeviceId, testApp* app) {
-	// const int videoWidth = 320;
-	// const int videoHeight = 240;
-	const int screenWidth = 1024;
-	const int screenHeight = 768;
-	const bool useNormalMapping = true;
+	const int videoWidth = 1680;
+	const int videoHeight = 1050;
+	const int screenWidth = 720;
+	const int screenHeight = 480;
 
 	ofSetupOpenGL(screenWidth, screenHeight, OF_FULLSCREEN);
 
@@ -33,8 +32,8 @@ void configureApp(int videoDeviceId, testApp* app) {
 	// 	cout << "ERROR: Must be running on a Raspberry Pi to use the pi camera option!" << endl << endl;
 	// 	// printUsage();
 	// }
-
-	app->movie = new VideoGrabberSource(videoDeviceId, ofGetWidth(), ofGetHeight());
+    app->env = app->OSX;
+	app->movie = new VideoGrabberSource(videoDeviceId, videoWidth, videoHeight);
 }
 
 #endif
