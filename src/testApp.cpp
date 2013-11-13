@@ -50,11 +50,6 @@ void testApp::setup() {
     mode = CC_MODE_CALIBRATE;
     isCalibrated = false;
 
-//    movie.initGrabber(w, h, true);
-    
-    testImage.loadImage("night-city.jpg");
-//    testImage.resize(w, h);
-
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(wWin, h);
     // calibrationImage.mirror(1, 0); //uncomment when using a mirror.
@@ -73,6 +68,7 @@ void testApp::setup() {
     initReadMode();
 
     artk.setup(camW, camH);
+    // uncomment for high-res cameras
 //    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
@@ -87,27 +83,17 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
-//    threshold = ofMap(mouseY, 0, ofGetHeight(), 0, 255);
     movie->update();
     
     if (movie->isFrameNew()) {
         ofPixels pix = movie->getPixels();
         rgb.setFromPixels(pix);
         rgb.updateTexture();
-//        fullSize.setFromPixels(pix);
-//        rgb.scaleIntoMe(fullSize);
     }
-    
-//    if (movie.isFrameNew()) {
-//        rgb.setFromPixels(movie.getPixels(), w, h);
-//    }
-//    
-//    movie.update();
 
     switch (mode) {
 
     case CC_MODE_READ:
-        // cout << "READ" << endl;
         rgbToFbo();
         fboToColorWarp();
         colorWarpToGrayThres();
@@ -120,24 +106,15 @@ void testApp::update() {
         break;
 
     case CC_MODE_CALIBRATE:
-        // convert our camera image to grayscale
         grayImage = rgb;
-            
-//            cout << grayImage.width << ", " << grayImage.height << endl;
-        
-
-        // Pass in the new image pixels to artk
         artk.update(grayImage.getPixels());
         break;
 
     case CC_MODE_THRESHOLD:
 
-
         rgbToFbo();
         fboToColorWarp();
         colorWarpToGrayThres();
-
-
         break;
 
     case CC_MODE_CONTOURS:
@@ -202,9 +179,7 @@ void testApp::update() {
         }
         updateBlink();
         //syncFreqBlinks();
-        
-            
-            
+
         break;
 
     case CC_MODE_MOUSE_POINTER:
@@ -258,12 +233,6 @@ void testApp::draw() {
 
     case CC_MODE_READ: {
         drawRGB();
-//        rgb.getTextureReference().bind();
-//        mesh.draw();
-//        rgb.getTextureReference().unbind();
-//        testImage.getTextureReference().bind();
-//        mesh.draw();
-//        testImage.getTextureReference().unbind();
         drawData();
         colorWarp.draw(0, 0, wWin, h);
         break;
@@ -664,7 +633,6 @@ void testApp::updateMesh() {
     mesh.clearNormals();
     mesh.addTexCoords(sourcePoints); // origin coordinates
     mesh.addVertices(destinationPoints);
-    mesh.addNormals(normals);
 }
 
 void testApp::initDisplayMode() {
@@ -676,16 +644,10 @@ void testApp::initReadMode() {
     destinationPoints.clear();
     //we can use 5 vertex to close it clockwise, or change the order to match Tri-strip sequence
     mesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-//    mesh.setMode(GL_TRIANGLE_STRIP);
     destinationPoints.push_back(ofVec3f(0, 0, 0));
     destinationPoints.push_back(ofVec3f(0, h, 0));
     destinationPoints.push_back(ofVec3f(wWin, 0, 0));
     destinationPoints.push_back(ofVec3f(wWin, h, 0));
-    
-    normals.push_back(ofVec3f(0, 0, 1));
-    normals.push_back(ofVec3f(0, 0, 1));
-    normals.push_back(ofVec3f(0, 0, 1));
-    normals.push_back(ofVec3f(0, 0, 1));
 }
 
 //--------------------------------------------------------------
