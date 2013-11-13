@@ -4,6 +4,10 @@
 
 //--------------------------------------------------------------
 void testApp::setup() {
+    debug = false;
+    
+    rotate90 = false;
+    
     ofBackground(0, 0, 0);
     ofEnableSmoothing();
     ofSetCircleResolution(100);
@@ -18,9 +22,10 @@ void testApp::setup() {
     camW = movie->getWidth();
     camH = movie->getHeight();
     
-    // get texture coords for po
-    
     wWin = h;
+    
+    xOffset = (w - wWin) / 2;
+    
     blobArea = 0;
     threshold = 127;
     factor = 1;
@@ -64,11 +69,11 @@ void testApp::setup() {
     fbo.allocate(wWin, h);
     blobFilled.allocate(wWin, h);
 
-    initDisplayMode();
-    initReadMode();
-
+    setDestinationPoints();
+    
+    // ARToolkit setup
     artk.setup(camW, camH);
-    // uncomment for high-res cameras
+    // uncomment for high-res cameras:
 //    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
@@ -229,6 +234,22 @@ void testApp::update() {
 void testApp::draw() {
     ofSetColor(255, 255, 255);
 
+    
+    ofPushMatrix();
+
+    
+//    ofPopMatrix();
+//    
+//    ofPushMatrix();
+    
+    ofTranslate(xOffset, 0);
+    
+    if (rotate90) {
+        ofTranslate(wWin, 0);
+        ofRotate(90);
+    }
+
+    
     switch (mode) {
 
     case CC_MODE_READ: {
@@ -246,9 +267,8 @@ void testApp::draw() {
     case CC_MODE_CALIBRATE: {
         drawCalibration();
 
-//        drawRGB();
+        drawRGB();
         drawData();
-//        artk.draw(h, h/2, 320, 240);
 
         // ARTK 2D stuff
         // See if marker ID '0' was detected
@@ -264,24 +284,12 @@ void testApp::draw() {
             // Get the corners
             vector<ofPoint> corners;
             ofTexture texture = rgb.getTextureReference();
-            
             artk.getDetectedMarkerOrderedCorners(myIndex, corners);
-            
             setSourcePoints(texture, corners);
-
             updateMesh();
             
-            ofPushMatrix();
-            {
-                ofTranslate(wWin, h - 240);
-                ofScale(0.5, 0.5);
-//                ofSetHexColor(0x00FFff);
-                for (int i = 0; i < corners.size(); i++) {
-                    cout << corners[i].x << ", " << corners[i].y << endl;
-                    ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
-                }
-            }
-            ofPopMatrix();
+            drawARCorners(corners);
+
         }
 
         break;
@@ -379,6 +387,8 @@ void testApp::draw() {
     }
 
     }
+    
+    ofPopMatrix();
 
 }
 
@@ -543,6 +553,7 @@ void testApp::drawMouseCursor() {
 }
 
 void testApp::drawData() {
+    if (!debug) return;
     ofPushMatrix();
     {
         ofTranslate(h + 50, 50);
@@ -562,14 +573,29 @@ void testApp::drawData() {
     ofPopMatrix();
 }
 
+void testApp::drawARCorners(vector<ofPoint> &corners) {
+    if (!debug) return;
+    ofPushMatrix();
+    {
+        ofTranslate(wWin, h - 240);
+        ofScale(0.5, 0.5);
+        //                ofSetHexColor(0x00FFff);
+        for (int i = 0; i < corners.size(); i++) {
+//            cout << corners[i].x << ", " << corners[i].y << endl;
+            ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
+        }
+    }
+    ofPopMatrix();
+}
+
 
 void testApp::drawRGB() {
+    if (!debug) return;
     ofPushMatrix();
     {
         ofTranslate(wWin, h - 240);
         ofScale(0.25, 0.25);
         rgb.draw(0, 0);
-//        grayImage.draw(0, 0);
 
     }
     ofPopMatrix();
@@ -577,6 +603,7 @@ void testApp::drawRGB() {
 }
 
 void testApp::drawBlobFilled() {
+    if (!debug) return;
     ofPushMatrix();
     {
         ofTranslate(h, h - 480);
@@ -635,11 +662,7 @@ void testApp::updateMesh() {
     mesh.addVertices(destinationPoints);
 }
 
-void testApp::initDisplayMode() {
-
-}
-
-void testApp::initReadMode() {
+void testApp::setDestinationPoints() {
     // SETUP MESH
     destinationPoints.clear();
     //we can use 5 vertex to close it clockwise, or change the order to match Tri-strip sequence
@@ -703,6 +726,15 @@ void testApp::keyPressed(int key) {
         mode = CC_MODE_CURSOR;
         freqsSynched = false;
         break;
+    
+    case 'd':
+        debug = !debug;
+        break;
+            
+    case 'r':
+        rotate90 = !rotate90;
+        break;
+
     }
 }
 

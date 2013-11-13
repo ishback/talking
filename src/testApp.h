@@ -59,20 +59,22 @@ public:
     float getAngle(ofPoint &p1, ofPoint &p2);
     
     void setSourcePoints(ofTexture &texture, vector<ofPoint> &corners);
-
-    void initDisplayMode();
-    void initReadMode();
+    void setDestinationPoints();
     
     void updateMesh();
     void adjustSensitivity();
     void drawCalibration();
     void drawCircle();
-    void drawRGB();
     void drawBlobFilled();
     void rgbToFbo();
     void fboToColorWarp();
     void colorWarpToGrayThres();
+    
+    // debug info
+    void drawRGB();
     void drawData();
+    void drawARCorners(vector<ofPoint> &corners);
+    
     void drawMouseCursor();
     void drawBar();
     
@@ -89,7 +91,7 @@ public:
 //    ofVideoGrabber movie;
     IVideoSource* movie;
     
-    // 0 or 1 depending on OSX or RPI
+    // set in main.cpp, 0 or 1 depending on OSX or RPI
     int env;
     
     ofImage calibrationImage;
@@ -104,7 +106,7 @@ public:
     
     ofFbo   fbo;
     
-    int w,h,camW,camH;
+    int w,h,camW,camH,xOffset;
     int wWin; //width of the square window
     int findHue;
     unsigned char * pixels;
@@ -147,6 +149,10 @@ public:
     int xPosBar; 
     int barPongHeight;
     int barPongWidth;
+    
+    bool debug;
+    
+    bool rotate90;
     
 };
 
