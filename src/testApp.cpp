@@ -24,8 +24,8 @@ void testApp::setup() {
     } else {
         w = 720;
         h = 480;
-        camW = 320;
-        camH = 240;
+        camW = 640;
+        camH = 480;
     }
     
     movie.setDesiredFrameRate(30);
