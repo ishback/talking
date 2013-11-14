@@ -19,7 +19,8 @@ void testApp::setup() {
         h = ofGetHeight();
         camW = 640;
         camH = 480;
-        movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
+    
+//        movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
     } else {
         w = 720;
         h = 480;

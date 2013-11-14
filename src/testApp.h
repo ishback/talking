@@ -9,9 +9,9 @@
 #include "ofxOpenCv.h"
 #include "ofxARToolkitPlus.h"
 
-#ifndef TARGET_RASPBERRY_PI
-#include "ofxMacamPs3Eye.h"
-#endif
+//#ifndef TARGET_RASPBERRY_PI
+//#include "ofxMacamPs3Eye.h"
+//#endif
 
 //#include "VideoSource.h"
 
