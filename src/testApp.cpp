@@ -15,12 +15,18 @@ void testApp::setup() {
     if (env == 0) {
         w = ofGetWidth();
         h = ofGetHeight();
+        camW = 640;
+        camH = 480;
     } else {
         w = 720;
         h = 480;
+        camW = 640;
+        camH = 480;
     }
-    camW = movie->getWidth();
-    camH = movie->getHeight();
+    
+    movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
+    
+    movie.initGrabber(camW, camH);
     
     wWin = h;
     
@@ -88,11 +94,11 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
-    movie->update();
+    movie.update();
     
-    if (movie->isFrameNew()) {
-        ofPixels pix = movie->getPixels();
-        rgb.setFromPixels(pix);
+    if (movie.isFrameNew()) {
+//        ofPixels pix = movie.getPixels();
+        rgb.setFromPixels(movie.getPixels(), camW, camH);
         rgb.updateTexture();
     }
 

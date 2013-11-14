@@ -8,7 +8,8 @@
 #include "ofMain.h"
 #include "ofxOpenCv.h"
 #include "ofxARToolkitPlus.h"
-#include "VideoSource.h"
+#include "ofxMacamPs3Eye.h"
+//#include "VideoSource.h"
 
 
 
@@ -88,8 +89,9 @@ public:
 
     vector<anglePoint> blobCenters;
     
-//    ofVideoGrabber movie;
-    IVideoSource* movie;
+    ofVideoGrabber movie;
+//    IVideoSource* movie;
+//    ofxMacamPs3Eye movie;
     
     // set in main.cpp, 0 or 1 depending on OSX or RPI
     int env;

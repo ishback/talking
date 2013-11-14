@@ -8,23 +8,21 @@
 // Setup default config for Raspberry Pi.
 void configureApp(int videoDeviceId, testApp* app) {
 //	const int videoWidth = 640;
-//	const int videoHeight = 360;
-	const int videoWidth = 1280;
-	const int videoHeight = 720;
+//	const int videoHeight = 480;
 	const int screenWidth = 720;
 	const int screenHeight = 480;
     
 	ofSetupOpenGL(screenWidth, screenHeight, OF_FULLSCREEN);
     app->env = app->RPI;
-	app->movie = new PiCameraSource(videoWidth, videoHeight);
+//	app->movie = new PiCameraSource(videoWidth, videoHeight);
 }
 
 #else
 
 // Setup default config for other platforms.
 void configureApp(int videoDeviceId, testApp* app) {
-	const int videoWidth = 640;
-	const int videoHeight = 360;
+//	const int videoWidth = 640;
+//	const int videoHeight = 480;
 	const int screenWidth = 720;
 	const int screenHeight = 480;
 
@@ -35,7 +33,7 @@ void configureApp(int videoDeviceId, testApp* app) {
 	// 	// printUsage();
 	// }
     app->env = app->OSX;
-	app->movie = new VideoGrabberSource(videoDeviceId, videoWidth, videoHeight);
+//	app->movie = new VideoGrabberSource(videoDeviceId, dvideoWidth, videoHeight);
 }
 
 #endif
