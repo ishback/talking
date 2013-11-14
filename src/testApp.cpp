@@ -24,11 +24,11 @@ void testApp::setup() {
     } else {
         w = 720;
         h = 480;
-        camW = 640;
-        camH = 480;
+        camW = 320;
+        camH = 240;
     }
     
-    movie.setDesiredFrameRate(60);
+    movie.setDesiredFrameRate(30);
     movie.initGrabber(camW, camH);
     
     wWin = h;
@@ -83,7 +83,7 @@ void testApp::setup() {
     // ARToolkit setup
     artk.setup(camW, camH);
     // uncomment for high-res cameras:
-//    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
+    artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
     // pongBall = false;
@@ -100,7 +100,6 @@ void testApp::update() {
     movie.update();
     
     if (movie.isFrameNew()) {
-//        ofPixels pix = movie.getPixels();
         rgb.setFromPixels(movie.getPixels(), camW, camH);
         rgb.updateTexture();
     }
