@@ -11,12 +11,15 @@ void testApp::setup() {
     ofBackground(0, 0, 0);
     ofEnableSmoothing();
     ofSetCircleResolution(100);
+    
+    
 
     if (env == 0) {
         w = ofGetWidth();
         h = ofGetHeight();
         camW = 640;
         camH = 480;
+        movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
     } else {
         w = 720;
         h = 480;
@@ -24,8 +27,7 @@ void testApp::setup() {
         camH = 480;
     }
     
-    movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
-    
+    movie.setDesiredFrameRate(60);
     movie.initGrabber(camW, camH);
     
     wWin = h;
