@@ -7,8 +7,10 @@
 
 // Setup default config for Raspberry Pi.
 void configureApp(int videoDeviceId, testApp* app) {
-	const int videoWidth = 640;
-	const int videoHeight = 360;
+//	const int videoWidth = 640;
+//	const int videoHeight = 360;
+	const int videoWidth = 1280;
+	const int videoHeight = 720;
 	const int screenWidth = 720;
 	const int screenHeight = 480;
     
