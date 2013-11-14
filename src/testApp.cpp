@@ -62,7 +62,9 @@ void testApp::setup() {
     ofSetLineWidth(1);
 
     mode = CC_MODE_CALIBRATE;
+    calibrationEnergy = 0;
     isCalibrated = false;
+    frameIsNew = false;
 
     calibrationImage.loadImage("calibration.jpg");
     calibrationImage.resize(wWin, h);
@@ -76,7 +78,12 @@ void testApp::setup() {
     grayThres.allocate(wWin, h);
     grayOfImage.allocate(wWin, h, OF_IMAGE_GRAYSCALE);
     fbo.allocate(wWin, h);
+    markerFbo.allocate(camW, camH);
+    colorMarker.allocate(camW, camH, OF_IMAGE_COLOR);
     blobFilled.allocate(wWin, h);
+    currentEnvir.allocate(camW, camH);
+    lastEnvir.allocate(camW, camH);
+    diffEnvir.allocate(camW, camH);
 
     setDestinationPoints();
     
@@ -102,6 +109,14 @@ void testApp::update() {
     if (movie.isFrameNew()) {
         rgb.setFromPixels(movie.getPixels(), camW, camH);
         rgb.updateTexture();
+        frameIsNew = true;
+    } else {
+        frameIsNew = false;
+    }
+    
+    if (needsRecalibration){
+        mode = CC_MODE_CALIBRATE;
+        needsRecalibration = false;
     }
 
     switch (mode) {
@@ -110,7 +125,8 @@ void testApp::update() {
         rgbToFbo();
         fboToColorWarp();
         colorWarpToGrayThres();
-        adjustSensitivity();
+        checkEnvironment();
+        //adjustSensitivity();
 
         break;
 
@@ -121,6 +137,7 @@ void testApp::update() {
     case CC_MODE_CALIBRATE:
         grayImage = rgb;
         artk.update(grayImage.getPixels());
+        
         break;
 
     case CC_MODE_THRESHOLD:
@@ -151,10 +168,8 @@ void testApp::update() {
 
                 blobArea = blobArea * factor;
                 //blobArea -= factor;
-                cout << lastArea << "  " << blobArea << endl;
             } else if (blobArea == 0) {
                 blobArea = contours.blobs[0].area;
-                cout << "here" << blobArea << endl;
             }
         }
 
@@ -220,7 +235,7 @@ void testApp::update() {
         if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
         }
-        checkIfBall(); //checks the area of the blob compared to the bounding box to identofy if it's a circle or a rectangle.
+        
 
         if (pongBall) {
             vel.x = vel.x * 1.001;
@@ -264,6 +279,7 @@ void testApp::draw() {
         drawRGB();
         drawData();
         colorWarp.draw(0, 0, wWin, h);
+        drawEnvironment();
         break;
     }
 
@@ -297,8 +313,11 @@ void testApp::draw() {
             updateMesh();
             
             drawARCorners(corners);
+            
+            getMarkerImage();
 
         }
+        
 
         break;
     }
@@ -398,6 +417,85 @@ void testApp::draw() {
     
     ofPopMatrix();
 
+}
+
+void testApp::checkEnvironment() {
+    if (frameIsNew) {
+        currentEnvir = rgb;
+        pixMarkerCV = markerCV.getPixels();
+        pixCurrentEnvir = currentEnvir.getPixels();
+        for (int i=0; i < markerCV.width * markerCV.height; i++){
+            if (pixMarkerCV[i] == 255){
+                pixCurrentEnvir[i] = 255;
+            }
+        }
+        
+        diffEnvir = currentEnvir;
+        diffEnvir.absDiff(lastEnvir);
+
+        diffEnvir.threshold(127);
+        int nWhitePixels = diffEnvir.countNonZeroInRegion(0, 0, camW, camH);
+        if (nWhitePixels > 500){
+            calibrationEnergy++;
+        } else {
+            calibrationEnergy--;
+            if (calibrationEnergy < 0){
+                calibrationEnergy = 0;
+            }
+        }
+        if (calibrationEnergy >= 5){
+            needsRecalibration = true;
+            calibrationEnergy = 0;
+        }
+        
+        lastEnvir = currentEnvir;
+    }
+}
+
+void testApp::drawEnvironment() {
+    if (!debug) return;
+    ofPushMatrix();
+    {
+        ofTranslate(wWin, 0);
+        ofScale(0.25, 0.25);
+        colorMarker.draw(0, 0);
+        markerCV.draw(0, camH);
+        lastEnvir.draw(0, 2*camH);
+        currentEnvir.draw(0, 3*camH);
+        diffEnvir.draw(0, 4*camH);
+        
+    }
+    ofPopMatrix();
+}
+
+void testApp::getMarkerImage(){
+    colorMarker.clear();
+    markerCV.clear();
+    markerQuad.clear();
+    
+    markerQuad.moveTo(sourcePoints[0]);
+    markerQuad.lineTo(sourcePoints[2]);
+    markerQuad.lineTo(sourcePoints[3]);
+    markerQuad.lineTo(sourcePoints[1]);
+    markerQuad.close();
+    
+    {
+        markerFbo.begin();
+        ofClear(0);
+        ofFill();
+        ofSetColor(255);
+        markerQuad.draw();
+        markerFbo.end();
+    }
+    
+    markerFbo.readToPixels(colorMarker.getPixelsRef());
+    colorMarker.setImageType(OF_IMAGE_GRAYSCALE);
+    colorMarker.update();
+    colorMarker.draw(0,0);
+
+    markerCV.setFromPixels(colorMarker.getPixelsRef()); //of to CV image
+    markerCV.updateTexture();
+    markerCV.draw(0, 400);
 }
 
 void testApp::setSourcePoints(ofTexture &texture, vector<ofPoint> &corners) {
@@ -610,6 +708,8 @@ void testApp::drawRGB() {
 
 }
 
+
+
 void testApp::drawBlobFilled() {
     if (!debug) return;
     ofPushMatrix();
@@ -728,6 +828,7 @@ void testApp::keyPressed(int key) {
     case '8':
         mode = CC_MODE_PONG;
         pos.set(wWin / 2, h / 2);
+        checkIfBall(); //checks the area of the blob compared to the bounding box to identofy if it's a circle or a rectangle.
         break;
 
     case '9':

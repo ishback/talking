@@ -65,6 +65,8 @@ public:
     
     void setSourcePoints(ofTexture &texture, vector<ofPoint> &corners);
     void setDestinationPoints();
+    void checkEnvironment();
+    void getMarkerImage();
     
     void updateMesh();
     void adjustSensitivity();
@@ -77,6 +79,7 @@ public:
     
     // debug info
     void drawRGB();
+    void drawEnvironment();
     void drawData();
     void drawARCorners(vector<ofPoint> &corners);
     
@@ -102,24 +105,30 @@ public:
     
     ofImage calibrationImage;
     ofxCvColorImage rgb, fullSize;;
-    ofxCvGrayscaleImage grayImage, grayThres, blobFilled;
+    ofxCvGrayscaleImage grayImage, grayThres, blobFilled, currentEnvir, lastEnvir, diffEnvir, markerCV;
     ofxCvContourFinder contours;
     float blobArea, lastArea;
     
     ofImage             grayOfImage;
-    ofImage             colorWarp, testImage;
+    ofImage             colorWarp, testImage, colorMarker;
     ofMesh              mesh;
     
-    ofFbo   fbo;
+    ofFbo   fbo, markerFbo;
     
     int w,h,camW,camH,xOffset;
     int wWin; //width of the square window
     int findHue;
     unsigned char * pixels;
+    unsigned char * pixCurrentEnvir;
+    unsigned char * pixMarkerCV;
     vector < ofVec2f > sourcePoints;
     vector < ofVec3f > destinationPoints;
     vector <ofVec3f> normals;
+    ofPath markerQuad;
     
+    bool frameIsNew;
+    bool needsRecalibration;
+    int calibrationEnergy;
     int mode;
     bool isCalibrated;
     float calibrationBWRatio;
