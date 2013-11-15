@@ -93,7 +93,8 @@ void testApp::setup() {
     artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
-    // pongBall = false;
+    otherIsBall = false;
+    otherIsPaddle = false;
     yPosBar = h - 80;
     barPongWidth = 300;
     barPongHeight = 40;
@@ -237,17 +238,19 @@ void testApp::update() {
         }
         
 
-        if (pongBall) {
+        if (otherIsPaddle) {
             vel.x = vel.x * 1.001;
             vel.y = vel.y * 1.001;
             pos += vel;
             checkWalls();
             checkBar();
-            // xPosBar = mouseX; //just for testing
             xPosBar = contours.blobs[0].centroid.x;
-        } else {
+        } else if (otherIsBall){
             // xPosBar = mouseX;
             xPosBar = contours.blobs[0].centroid.x;
+        } else { //waiting for the other to become paddle, remain in the center.
+            pos.x = camW/2;
+            pos.y = camH/2;
         }
         break;
     }
@@ -397,18 +400,20 @@ void testApp::draw() {
 
     case CC_MODE_PONG: {
 
-        if (pongBall) {
+        if (otherIsBall) {
+            drawBar();
+            
             drawData();
             drawRGB();
             drawBlobFilled();
-            drawBall();
-            // drawBar(); // just for testing
 
         } else {
+            drawBall();
+            
             drawData();
             drawRGB();
             drawBlobFilled();
-            drawBar();
+            
             break;
         }
     }
@@ -416,7 +421,6 @@ void testApp::draw() {
     }
     
     ofPopMatrix();
-
 }
 
 void testApp::checkEnvironment() {
@@ -550,24 +554,24 @@ void testApp::syncFreqBlinks(){
     }
 }
 
-void testApp::checkIfBall() {
+void testApp::checkTheOther() {
     if (contours.nBlobs) {
         float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
         float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
         // we compare the area of blob to area of bounding box. we could also compare the ratio between height and width of the bounding box.
-        // if (contours.blobs[0].area > areaBoundingBox*0.85){ //it sees the bar, set to Ball.
-        //     pongBall = true;
 
-        // } else if (contours.blobs[0].area < areaBoundingBox*0.85){ // it's sees a ball, set to Bar
-        //     pongBall = false;
-        // }
         if (ratio > 1.5) {
-            //it sees the bar, set to Ball.
-            pongBall = true;
-        } else {
-            // it's sees a ball, set to Bar
-            pongBall = false;
+            
+            otherIsPaddle = true;
+            otherIsBall = false;
+        } else if (ratio < 1.5){
+            otherIsBall = true;
+            otherIsPaddle = false;
+            
         }
+    } else {
+        otherIsBall = false;
+        otherIsPaddle = false;
     }
 }
 
@@ -609,6 +613,7 @@ void testApp::checkBar() {
 }
 
 void testApp::drawBall() {
+
     ofSetColor(255);
     ofCircle(pos.x, pos.y, ballRadius);
 }
@@ -750,8 +755,6 @@ void testApp::colorWarpToGrayThres() {
     grayThres.threshold(threshold);
 }
 
-
-
 void testApp::drawCalibration() {
     calibrationImage.draw(0, 0);
 }
@@ -820,6 +823,7 @@ void testApp::keyPressed(int key) {
         mode = CC_MODE_PROGRESS_BAR;
             blinkCount = 0;
         break;
+            
 
     case '7':
         mode = CC_MODE_MOUSE_POINTER;
@@ -828,7 +832,7 @@ void testApp::keyPressed(int key) {
     case '8':
         mode = CC_MODE_PONG;
         pos.set(wWin / 2, h / 2);
-        checkIfBall(); //checks the area of the blob compared to the bounding box to identofy if it's a circle or a rectangle.
+        checkTheOther(); //checks the area of the blob compared to the bounding box to identify if it's a circle or a rectangle.
         break;
 
     case '9':

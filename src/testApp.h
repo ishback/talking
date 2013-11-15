@@ -89,7 +89,7 @@ public:
     void checkWalls();
     void checkBar();
     void drawBall();
-    void checkIfBall();
+    void checkTheOther();
 
     void updateBlink();
     void syncFreqBlinks();
@@ -157,7 +157,8 @@ public:
     int lastBlinkTime;
     int myBlinkPeriod;
 
-    bool pongBall; // true if ball, false if bar.
+    bool otherIsBall;
+    bool otherIsPaddle;
     ofVec2f pos, vel;
     int ballRadius;
     int yPosBar;
