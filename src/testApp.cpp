@@ -98,7 +98,7 @@ void testApp::setup() {
     yPosBar = h - 80;
     barPongWidth = 300;
     barPongHeight = 40;
-    ballRadius = 50;
+    ballInitRadius = 50;
     pos.set(wWin / 2, h / 2);
     vel.set(6, 10);
 }
@@ -231,26 +231,35 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
 
-        contours.findContours(grayThres, 1000, w * h, 1, false);
+        contours.findContours(grayThres, 100, w * h, 1, false);
         blobFilled.set(0);
+            cout << contours.nBlobs << endl;
         if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
-        }
         
-
-        if (otherIsPaddle) {
-            vel.x = vel.x * 1.001;
-            vel.y = vel.y * 1.001;
-            pos += vel;
-            checkWalls();
-            checkBar();
-            xPosBar = contours.blobs[0].centroid.x;
-        } else if (otherIsBall){
-            // xPosBar = mouseX;
-            xPosBar = contours.blobs[0].centroid.x;
-        } else { //waiting for the other to become paddle, remain in the center.
-            pos.x = camW/2;
-            pos.y = camH/2;
+            //checkTheOther();
+            if (otherLost){
+                ballRadius--;
+                if (ballRadius == 0){
+                    IAmBall = false;
+                    checkTheOther();
+                    
+                }
+            } else if (IAmBall && otherIsPaddle) {
+                vel.x = vel.x * 1.001;
+                vel.y = vel.y * 1.001;
+                pos += vel;
+                checkWalls();
+                checkBar();
+                xPosBar = contours.blobs[0].centroid.x;
+            } else if (IAmBall && !otherIsPaddle && !otherIsBall){ // I'm ball, waiting for the other
+                pos.x = camW/2;
+                pos.y = camH/2;
+                checkTheOther();
+            } else if (!IAmBall && otherIsBall){ //I'm paddle
+                xPosBar = contours.blobs[0].centroid.x;
+                checkILost();
+            }
         }
         break;
     }
@@ -399,23 +408,16 @@ void testApp::draw() {
     }
 
     case CC_MODE_PONG: {
-
-        if (otherIsBall) {
+        drawData();
+        drawRGB();
+        drawBlobFilled();
+        
+        if (!IAmBall) {
             drawBar();
-            
-            drawData();
-            drawRGB();
-            drawBlobFilled();
-
-        } else {
+        } else if (IAmBall){
             drawBall();
-            
-            drawData();
-            drawRGB();
-            drawBlobFilled();
-            
-            break;
         }
+        break;
     }
 
     }
@@ -495,11 +497,11 @@ void testApp::getMarkerImage(){
     markerFbo.readToPixels(colorMarker.getPixelsRef());
     colorMarker.setImageType(OF_IMAGE_GRAYSCALE);
     colorMarker.update();
-    colorMarker.draw(0,0);
+    //colorMarker.draw(0,0);
 
     markerCV.setFromPixels(colorMarker.getPixelsRef()); //of to CV image
     markerCV.updateTexture();
-    markerCV.draw(0, 400);
+    //markerCV.draw(0, 400);
 }
 
 void testApp::setSourcePoints(ofTexture &texture, vector<ofPoint> &corners) {
@@ -558,21 +560,30 @@ void testApp::checkTheOther() {
     if (contours.nBlobs) {
         float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
         float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
-        // we compare the area of blob to area of bounding box. we could also compare the ratio between height and width of the bounding box.
-
-        if (ratio > 1.5) {
-            
-            otherIsPaddle = true;
-            otherIsBall = false;
-        } else if (ratio < 1.5){
+        // we can use the area of blob to area of bounding box.
+        // or we can use the ratio between height and width of the bounding box. We Do That.
+        if (ratio < 1.5){
             otherIsBall = true;
             otherIsPaddle = false;
-            
+            IAmBall = false;    //I am paddle.
+            otherLost = false;
+        } else if (ratio >= 1.5) {
+            otherIsPaddle = true;
+            otherIsBall = false;
+            IAmBall = true;
+            ballRadius = ballInitRadius;
+            otherLost = false;
         }
-    } else {
+    } else { // There are no blobs yet, so we start being the ball.
         otherIsBall = false;
         otherIsPaddle = false;
+        IAmBall = true;
+        otherLost = false;
+        pos.x = wWin / 2;
+        pos.y = h / 2;
+
     }
+    cout << "just checked the other" << endl;
 }
 
 void testApp::checkWalls() {
@@ -601,8 +612,9 @@ void testApp::checkBar() {
 
     if (pos.y + ballRadius > yPosBar - barHeight / 2) {
         if ((pos.x > xPosBar + barPongWidth / 2) || (pos.x < xPosBar - barPongWidth / 2)) {
-            pos.x = wWin / 2;
-            pos.y = h / 2;
+//            pos.x = wWin / 2;
+//            pos.y = h / 2;
+            otherLost = true;
             cout << "OUT!!!" << endl;
         } else {
             pos.y = yPosBar - barPongHeight / 2 - ballRadius;
@@ -629,8 +641,6 @@ void testApp::adjustSensitivity() {
         }
     }
     calibrationBWRatio = white / black;
-        
-    
 }
 
 void testApp::drawBar() {
@@ -680,6 +690,10 @@ void testApp::drawData() {
             float progress = float(barMineCurrent)/float(barLength) * 100;
             ofDrawBitmapString("Bar progress:   " + ofToString(progress) + "%", 0, 80);
         }
+        ofDrawBitmapString("I'm ball:          " + ofToString(IAmBall), 0, 90);
+        ofDrawBitmapString("Other is ball:          " + ofToString(otherIsBall), 0, 100);
+        ofDrawBitmapString("Other is paddle:          " + ofToString(otherIsPaddle), 0, 110);
+        ofDrawBitmapString("Other lost:          " + ofToString(otherLost), 0, 120);
     }
     ofPopMatrix();
 }
@@ -722,7 +736,9 @@ void testApp::drawBlobFilled() {
         ofTranslate(h, h - 480);
         ofScale(0.25, 0.25);
         ofSetColor(255);
+        
         blobFilled.draw(0, 0);
+        colorWarp.draw(0, 0);
         contours.draw();
         ofSetColor(255, 0, 0);
         ofFill();
@@ -832,6 +848,7 @@ void testApp::keyPressed(int key) {
     case '8':
         mode = CC_MODE_PONG;
         pos.set(wWin / 2, h / 2);
+        ballRadius = ballInitRadius;
         checkTheOther(); //checks the area of the blob compared to the bounding box to identify if it's a circle or a rectangle.
         break;
 

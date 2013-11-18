@@ -90,6 +90,7 @@ public:
     void checkBar();
     void drawBall();
     void checkTheOther();
+    void checkILost();
 
     void updateBlink();
     void syncFreqBlinks();
@@ -157,9 +158,12 @@ public:
     int lastBlinkTime;
     int myBlinkPeriod;
 
+    bool IAmBall;
     bool otherIsBall;
     bool otherIsPaddle;
+    bool otherLost;
     ofVec2f pos, vel;
+    int ballInitRadius;
     int ballRadius;
     int yPosBar;
     int xPosBar; 
