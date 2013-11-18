@@ -100,7 +100,8 @@ void testApp::setup() {
     barPongHeight = 40;
     ballInitRadius = 50;
     pos.set(wWin / 2, h / 2);
-    vel.set(6, 10);
+    velInit.set(6, 10);
+    ratioMarkerArea = 0;
 }
 
 //--------------------------------------------------------------
@@ -231,7 +232,7 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
 
-        contours.findContours(grayThres, 100, w * h, 1, false);
+        contours.findContours(grayThres, 100, (w * h)/5, 1, false);
         blobFilled.set(0);
             cout << contours.nBlobs << endl;
         if (contours.nBlobs) {
@@ -258,7 +259,15 @@ void testApp::update() {
                 checkTheOther();
             } else if (!IAmBall && otherIsBall){ //I'm paddle
                 xPosBar = contours.blobs[0].centroid.x;
-                checkILost();
+                //checkILost();
+            }
+        } else {
+            otherIsBall = false;
+            otherIsPaddle = false;
+            if (IAmBall){
+                IAmBall = false;
+            } else { //I'm the paddle
+                IAmBall = true;
             }
         }
         break;
@@ -556,18 +565,27 @@ void testApp::syncFreqBlinks(){
     }
 }
 
+float testApp::getRatioMarkerArea(){
+    if (contours.nBlobs){
+        ratioMarkerArea = (float(grayThres.countNonZeroInRegion(0, 0, grayThres.width, grayThres.height))) / float((grayThres.width * grayThres.height));
+    }
+    return ratioMarkerArea;
+
+}
+
 void testApp::checkTheOther() {
     if (contours.nBlobs) {
         float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
         float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
         // we can use the area of blob to area of bounding box.
         // or we can use the ratio between height and width of the bounding box. We Do That.
-        if (ratio < 1.5){
+        cout << getRatioMarkerArea() << endl;
+        if ((ratio < 1.5) && (getRatioMarkerArea() < 0.05)){
             otherIsBall = true;
             otherIsPaddle = false;
             IAmBall = false;    //I am paddle.
             otherLost = false;
-        } else if (ratio >= 1.5) {
+        } else if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.05)) {
             otherIsPaddle = true;
             otherIsBall = false;
             IAmBall = true;
@@ -615,6 +633,7 @@ void testApp::checkBar() {
 //            pos.x = wWin / 2;
 //            pos.y = h / 2;
             otherLost = true;
+            vel = velInit;
             cout << "OUT!!!" << endl;
         } else {
             pos.y = yPosBar - barPongHeight / 2 - ballRadius;
@@ -849,6 +868,7 @@ void testApp::keyPressed(int key) {
         mode = CC_MODE_PONG;
         pos.set(wWin / 2, h / 2);
         ballRadius = ballInitRadius;
+        vel = velInit;
         checkTheOther(); //checks the area of the blob compared to the bounding box to identify if it's a circle or a rectangle.
         break;
 

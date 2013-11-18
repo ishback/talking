@@ -91,6 +91,7 @@ public:
     void drawBall();
     void checkTheOther();
     void checkILost();
+    float getRatioMarkerArea();
 
     void updateBlink();
     void syncFreqBlinks();
@@ -162,13 +163,14 @@ public:
     bool otherIsBall;
     bool otherIsPaddle;
     bool otherLost;
-    ofVec2f pos, vel;
+    ofVec2f pos, velInit, vel;
     int ballInitRadius;
     int ballRadius;
     int yPosBar;
     int xPosBar; 
     int barPongHeight;
     int barPongWidth;
+    float ratioMarkerArea;
     
     bool debug;
     
