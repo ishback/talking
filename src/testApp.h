@@ -160,6 +160,7 @@ public:
     int myBlinkPeriod;
 
     bool IAmBall;
+    bool IAmPaddle;
     bool otherIsBall;
     bool otherIsPaddle;
     bool otherLost;
