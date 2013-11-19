@@ -63,7 +63,7 @@ void testApp::setup() {
     isCalibrated = false;
     frameIsNew = false;
 
-    calibrationImage.loadImage("calibration.jpg");
+    calibrationImage.loadImage("calibration_border.jpg");
     calibrationImage.resize(wWin, h);
     // calibrationImage.mirror(1, 0); //uncomment when using a mirror.
 
@@ -266,6 +266,11 @@ void testApp::update() {
                     IAmPaddle = true;
                     otherIsBall = true;
                     otherIsPaddle = false;
+                } else {
+                    IAmBall = true;
+                    IAmPaddle = false;
+                    otherIsBall = false;
+                    otherIsPaddle = false;
                 }
             } else if (IAmBall) {
                 // I'm the ball
@@ -286,7 +291,7 @@ void testApp::update() {
                     }
                 }
                 
-                if ( !(otherIsBall || otherIsPaddle) ) {
+                else if ( !(otherIsBall || otherIsPaddle) ) {
                     
                     if (checkOtherIsPaddle()) {
                         otherIsPaddle = true;
@@ -301,7 +306,7 @@ void testApp::update() {
 
                 }
                 
-                if (otherIsPaddle) {
+                else if (otherIsPaddle) {
                     // update pos
                     cout << "I'm ball, other is paddle" << endl;
                     // other is paddle, keep moving and check walls and paddle bouncing
@@ -310,7 +315,7 @@ void testApp::update() {
                     pos += vel;
                     checkWalls();
                     checkBar();
-                    xPosBar = wWin - contours.blobs[0].centroid.x;
+                    xPosBar = contours.blobs[0].centroid.x;
                 }
                 
                 else if (otherIsBall) {
@@ -322,7 +327,7 @@ void testApp::update() {
                 
                 if (checkOtherIsBall()) {
                     otherIsBall = true;
-                    xPosBar = wWin - contours.blobs[0].centroid.x;
+                    xPosBar = contours.blobs[0].centroid.x;
                 } else {
                     // add energy
                     IAmPaddle = false;
@@ -360,6 +365,7 @@ void testApp::update() {
         } else {                    // there are no blobs
 //            otherIsBall = false;
 //            otherIsPaddle = false;
+            cout << "no blobs" << endl;
             if (IAmBall) {
                 if (otherLost) {
                     IAmPaddle = false;
@@ -367,6 +373,10 @@ void testApp::update() {
                 } else {
                     // other hasn't lost, but there is no blob... obstruction?  Just wait.
                 }
+            }
+            
+            if (IAmPaddle) {
+                ILost = true;
             }
             
             if (ILost) {
@@ -446,7 +456,7 @@ void testApp::draw() {
             // Get the corners
             vector<ofPoint> corners;
             ofTexture texture = rgb.getTextureReference();
-            artk.getDetectedMarkerOrderedCorners(myIndex, corners);
+            artk.getDetectedMarkerOrderedBorderCorners(myIndex, corners);
             setSourcePoints(texture, corners);
             updateMesh();
             
@@ -538,7 +548,7 @@ void testApp::draw() {
         drawRGB();
         drawBlobFilled();
         
-        if (!IAmBall) {
+        if (IAmPaddle) {
             drawBar();
         } else if (IAmBall){
             drawBall();
@@ -697,7 +707,7 @@ bool testApp::checkOtherIsBall() {
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
     cout << getRatioMarkerArea() << endl;
-    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)){
+    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)) {
         // The other is the ball
         return true;
     } else {
@@ -821,10 +831,13 @@ void testApp::drawData() {
             float progress = float(barMineCurrent)/float(barLength) * 100;
             ofDrawBitmapString("Bar progress:   " + ofToString(progress) + "%", 0, 80);
         }
-        ofDrawBitmapString("I'm ball:          " + ofToString(IAmBall), 0, 90);
-        ofDrawBitmapString("Other is ball:          " + ofToString(otherIsBall), 0, 100);
-        ofDrawBitmapString("Other is paddle:          " + ofToString(otherIsPaddle), 0, 110);
-        ofDrawBitmapString("Other lost:          " + ofToString(otherLost), 0, 120);
+        ofDrawBitmapString("I'm ball:           " + ofToString(IAmBall), 0, 90);
+        ofDrawBitmapString("I'm paddle:         " + ofToString(IAmPaddle), 0, 100);
+        ofDrawBitmapString("Other is ball:      " + ofToString(otherIsBall), 0, 110);
+        ofDrawBitmapString("Other is paddle:    " + ofToString(otherIsPaddle), 0, 120);
+        ofDrawBitmapString("Other lost:         " + ofToString(otherLost), 0, 130);
+        ofDrawBitmapString("I lost:             " + ofToString(ILost), 0, 140);
+        ofDrawBitmapString("Lose time:          " + ofToString(loseTime), 0, 150);
     }
     ofPopMatrix();
 }
