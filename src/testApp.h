@@ -171,6 +171,8 @@ public:
     int barPongHeight;
     int barPongWidth;
     float ratioMarkerArea;
+    int loseTime;
+    int waitTime;
     
     bool debug;
     
