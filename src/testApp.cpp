@@ -12,18 +12,15 @@ void testApp::setup() {
     ofEnableSmoothing();
     ofSetCircleResolution(100);
     
-    
 
     if (env == 0) {
         w = ofGetWidth();
         h = ofGetHeight();
         camW = 640;
         camH = 480;
-    
-//        movie.setGrabber(ofPtr<ofxMacamPs3Eye>(new ofxMacamPs3Eye));
     } else {
         w = 720;
-        h = 480;
+        h = 446;
         camW = 640;
         camH = 480;
     }
@@ -89,14 +86,14 @@ void testApp::setup() {
     
     // ARToolkit setup
     artk.setup(camW, camH);
-    // uncomment for high-res cameras:
     artk.setUndistortionMode(ofxARToolkitPlus::UNDIST_STD);
     artk.setThreshold(threshold);
 
     otherIsBall = false;
     otherIsPaddle = false;
+    IAmBall = false;
     yPosBar = h - 80;
-    barPongWidth = 300;
+    barPongWidth = 200;
     barPongHeight = 40;
     ballInitRadius = 50;
     pos.set(wWin / 2, h / 2);
@@ -234,6 +231,7 @@ void testApp::update() {
         colorWarpToGrayThres();
 
         contours.findContours(grayThres, 100, (w * h)/5, 1, false);
+
         blobFilled.set(0);
             //cout << contours.nBlobs << endl;
         if (contours.nBlobs) {
@@ -254,8 +252,8 @@ void testApp::update() {
                 checkBar();
                 xPosBar = contours.blobs[0].centroid.x;
             } else if (IAmBall && !otherIsPaddle && !otherIsBall){ // I'm ball, waiting for the other
-                pos.x = camW/2;
-                pos.y = camH/2;
+                pos.x = wWin/2;
+                pos.y = h/2;
                 checkTheOther();
             } else if (!IAmBall && otherIsBall){ //I'm paddle
                 xPosBar = contours.blobs[0].centroid.x;
