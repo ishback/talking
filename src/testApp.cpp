@@ -234,13 +234,39 @@ void testApp::update() {
 
         blobFilled.set(0);
             //cout << contours.nBlobs << endl;
-        if (contours.nBlobs) {
+            
+        if (ILost) {
+            if (loseTime == 0) {
+                loseTime = ofGetElapsedTimeMillis(); // we start counting
+            } else {
+                if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
+                    IAmBall = true;
+                    IAmPaddle = false;
+                    otherIsBall = false;
+                    otherIsPaddle = false;
+                    loseTime = 0;
+                    pos.x = wWin / 2;
+                    pos.y = h / 2;
+                    ILost = false;
+                    cout << "I'm setting myself to Ball" << endl;
+                }
+            }
+            
+        }
+        
+        else if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
         
 
-            if (!(IAmBall || IAmPaddle)) {
-                // I'm not the ball or paddle, so check what the other is...
-                checkTheOther();
+            if ( !(IAmBall || IAmPaddle) ) {
+                // I'm not the ball or paddle, so check if the other is the ball
+                if (checkOtherIsBall()) {
+                    // other is ball, so I'm paddle
+                    IAmBall = false;
+                    IAmPaddle = true;
+                    otherIsBall = true;
+                    otherIsPaddle = false;
+                }
             } else if (IAmBall) {
                 // I'm the ball
                 
@@ -250,23 +276,33 @@ void testApp::update() {
                     if (ballRadius > 0){
                         ballRadius--;
                     } else {
-                        checkTheOther();
-                        IAmBall = false;
-//                        IAmPaddle = false;
+                        if (checkOtherIsBall()) {
+                            IAmPaddle = true;
+                            IAmBall = false;
+                            otherIsBall = true;
+                            otherIsPaddle = false;
+                            otherLost = false;
+                        }
                     }
                 }
                 
-                else if (!(otherIsBall || otherIsPaddle)) {
-                    // the other isn't anything yet, assume beginning of game.
-                    // Can we just set the other to the paddle here? Or do we have to check?
-                    pos.x = wWin/2;
-                    pos.y = h/2;
-                    checkTheOther();
-//                    otherIsBall = false;
-//                    otherIsPaddle = true;
+                if ( !(otherIsBall || otherIsPaddle) ) {
+                    
+                    if (checkOtherIsPaddle()) {
+                        otherIsPaddle = true;
+                        otherIsBall = false;
+                    } else {
+                        // the other isn't anything yet, assume beginning of game.
+                        // Can we just set the other to the paddle here? Or do we have to check?
+                        pos.x = wWin/2;
+                        pos.y = h/2;
+                        otherIsPaddle = false;
+                    }
+
                 }
                 
-                else if (otherIsPaddle) {
+                if (otherIsPaddle) {
+                    // update pos
                     cout << "I'm ball, other is paddle" << endl;
                     // other is paddle, keep moving and check walls and paddle bouncing
                     vel.x = vel.x * 1.001;
@@ -274,7 +310,7 @@ void testApp::update() {
                     pos += vel;
                     checkWalls();
                     checkBar();
-                    xPosBar = contours.blobs[0].centroid.x;
+                    xPosBar = wWin - contours.blobs[0].centroid.x;
                 }
                 
                 else if (otherIsBall) {
@@ -282,18 +318,18 @@ void testApp::update() {
                     // Something is wrong!
                 }
                 
-                
-                
             } else if (IAmPaddle) {
-                // I'm the paddle
-                if (!(otherIsBall || otherIsPaddle)) {
-                    // Game over?
-                    cout << "I'm ball, other is ball (?)" << endl;
+                
+                if (checkOtherIsBall()) {
+                    otherIsBall = true;
+                    xPosBar = wWin - contours.blobs[0].centroid.x;
+                } else {
+                    // add energy
+                    IAmPaddle = false;
+                    otherIsBall = false;
+                    ILost = true;
                 }
                 
-                if (otherIsBall) {
-                    xPosBar = contours.blobs[0].centroid.x;
-                }
             }
             
             
@@ -333,8 +369,7 @@ void testApp::update() {
                 }
             }
             
-            if (IAmPaddle) {
-                //I'm the paddle, for now we're assuming we've lost.  This might be wrong.
+            if (ILost) {
                 if (loseTime == 0) {
                     loseTime = ofGetElapsedTimeMillis(); // we start counting
                 } else {
@@ -655,32 +690,32 @@ float testApp::getRatioMarkerArea(){
 
 }
 
-void testApp::checkTheOther() {
+
+bool testApp::checkOtherIsBall() {
     float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
     float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
     cout << getRatioMarkerArea() << endl;
-    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)){ // The other is the ball
-        otherIsBall = true;
-        otherIsPaddle = false;
-//        IAmBall = false;
-//        IAmPaddle = true;
-        otherLost = false;
-        cout << "I'm setting the other to Ball" << endl;
-    } else if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.1)) { // The other is the paddle
-        otherIsPaddle = true;
-        otherIsBall = false;
-//        IAmBall = true;
-//        IAmPaddle = false;
-        ballRadius = ballInitRadius;
-        otherLost = false;
-        cout << "I'm setting the other to Paddle" << endl;
-    } else { // the other is nothing yet, I become ball
-        IAmBall = true;
-        IAmPaddle = false;
+    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)){
+        // The other is the ball
+        return true;
+    } else {
+        return false;
     }
-    cout << "just checked the other" << endl;
+}
+
+bool testApp::checkOtherIsPaddle() {
+    float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
+    float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
+    // we can use the area of blob to area of bounding box.
+    // or we can use the ratio between height and width of the bounding box. We Do That.
+    cout << getRatioMarkerArea() << endl;
+    if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.1)) {
+        // The other is the paddle
+        return true;
+    }
+    return false;
 }
 
 void testApp::checkWalls() {
@@ -707,13 +742,13 @@ void testApp::checkWalls() {
 
 void testApp::checkBar() {
 
-    if (pos.y + ballRadius > yPosBar - barHeight / 2) {
+    if (pos.y + ballRadius > yPosBar - barPongHeight / 2) {
         if ((pos.x > xPosBar + barPongWidth / 2) || (pos.x < xPosBar - barPongWidth / 2)) {
             otherLost = true;
             vel = velInit;
             cout << "LOSE!!!" << endl;
         } else {
-            pos.y = yPosBar - barPongHeight / 2 - ballRadius;
+            pos.y = yPosBar - barPongHeight / 2 - ballRadius - 5;
             vel.y = -vel.y;
             cout << "good" << endl;
         }

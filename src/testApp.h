@@ -90,6 +90,8 @@ public:
     void checkBar();
     void drawBall();
     void checkTheOther();
+    bool checkOtherIsPaddle();
+    bool checkOtherIsBall();
     void checkILost();
     float getRatioMarkerArea();
 
@@ -164,6 +166,7 @@ public:
     bool otherIsBall;
     bool otherIsPaddle;
     bool otherLost;
+    bool ILost;
     ofVec2f pos, velInit, vel;
     int ballInitRadius;
     int ballRadius;
