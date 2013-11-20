@@ -313,7 +313,7 @@ void testApp::update() {
                 if (loseTime == 0) {
                     loseTime = ofGetElapsedTimeMillis(); // we start counting
                 } else {
-                    if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
+                    if ((ofGetElapsedTimeMillis() - loseTime) > waitTime + 1000) {
                         if (checkOtherIsBall()) {
                             IAmPaddle = true;
                             IAmBall = false;
@@ -906,7 +906,7 @@ void testApp::drawRGB() {
     if (!debug) return;
     ofPushMatrix();
     {
-        ofTranslate(wWin, h - 240);
+        ofTranslate(wWin+20, h - 240);
         ofScale(0.25, 0.25);
         rgb.draw(0, 0);
 
@@ -919,7 +919,7 @@ void testApp::drawBlobFilled() {
     if (!debug) return;
     ofPushMatrix();
     {
-        ofTranslate(h, h - 480);
+        ofTranslate(wWin + 20, h - 480);
         ofScale(0.25, 0.25);
         ofSetColor(255);
         
