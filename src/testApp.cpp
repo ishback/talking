@@ -212,6 +212,13 @@ void testApp::update() {
             cursorLastSwitchTime = ofGetElapsedTimeMillis();
         }
         updateBlink();
+            
+            if (blinkCount > 5) {
+                if (checkOtherIsBall()) {
+                    mode = CC_MODE_PONG;
+                    IAmPaddle = true;
+                }
+            }
         //syncFreqBlinks();
 
         break;
@@ -511,9 +518,14 @@ void testApp::draw() {
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        barMineCurrent = blinkCount * 3;
+        barMineCurrent = blinkCount * 10;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
+        
+        if (barMineCurrent >= barLength) {
+            mode = CC_MODE_PONG;
+            IAmBall = true;
+        }
         
 //        if (contours.nBlobs) {
 //            barOtherCurrent = blobArea / barHeight;
