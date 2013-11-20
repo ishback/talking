@@ -4,6 +4,8 @@
 
 //--------------------------------------------------------------
 void testApp::setup() {
+    ofSetFrameRate(30);
+    
     debug = false;
     
     rotate90 = false;
@@ -230,12 +232,13 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
 
-        contours.findContours(grayThres, 100, (w * h)/5, 1, false);
+        contours.findContours(grayThres, 100, wWin * h, 1, false);
 
         blobFilled.set(0);
             //cout << contours.nBlobs << endl;
             
         if (ILost) {
+            cout << "I lost." << endl;
             if (loseTime == 0) {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
@@ -247,7 +250,10 @@ void testApp::update() {
                     loseTime = 0;
                     pos.x = wWin / 2;
                     pos.y = h / 2;
+                    vel = velInit;
+                    ballRadius = ballInitRadius;
                     ILost = false;
+                    otherLost = false;
                     cout << "I'm setting myself to Ball" << endl;
                 }
             }
@@ -256,145 +262,130 @@ void testApp::update() {
         
         else if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
-        
+            blobEnergy += 1;
+            if (blobEnergy >= 0) {
+                blobEnergy = blobStable;
 
-            if ( !(IAmBall || IAmPaddle) ) {
-                // I'm not the ball or paddle, so check if the other is the ball
-                if (checkOtherIsBall()) {
-                    // other is ball, so I'm paddle
-                    IAmBall = false;
-                    IAmPaddle = true;
-                    otherIsBall = true;
-                    otherIsPaddle = false;
-                } else {
-                    IAmBall = true;
-                    IAmPaddle = false;
-                    otherIsBall = false;
-                    otherIsPaddle = false;
-                }
-            } else if (IAmBall) {
-                // I'm the ball
-                
-                if (otherLost) {
-                    cout << "I'm ball, other has lost." << endl;
-                    // The other has lost, shrink me down then check the other until it shows the ball.
-                    if (ballRadius > 0){
-                        ballRadius--;
-                    } else {
-                        if (checkOtherIsBall()) {
-                            IAmPaddle = true;
-                            IAmBall = false;
-                            otherIsBall = true;
-                            otherIsPaddle = false;
-                            otherLost = false;
-                        }
-                    }
-                }
-                
-                else if ( !(otherIsBall || otherIsPaddle) ) {
-                    
-                    if (checkOtherIsPaddle()) {
-                        otherIsPaddle = true;
-                        otherIsBall = false;
-                    } else {
-                        // the other isn't anything yet, assume beginning of game.
-                        // Can we just set the other to the paddle here? Or do we have to check?
-                        pos.x = wWin/2;
-                        pos.y = h/2;
+                if ( !(IAmBall || IAmPaddle) ) {
+                    // I'm not the ball or paddle, so check if the other is the ball
+                    if (checkOtherIsBall()) {
+                        // other is ball, so I'm paddle
+                        IAmBall = false;
+                        IAmPaddle = true;
+                        otherIsBall = true;
                         otherIsPaddle = false;
-                    }
-
-                }
-                
-                else if (otherIsPaddle) {
-                    // update pos
-                    cout << "I'm ball, other is paddle" << endl;
-                    // other is paddle, keep moving and check walls and paddle bouncing
-                    vel.x = vel.x * 1.001;
-                    vel.y = vel.y * 1.001;
-                    pos += vel;
-                    checkWalls();
-                    checkBar();
-                    xPosBar = contours.blobs[0].centroid.x;
-                }
-                
-                else if (otherIsBall) {
-                    cout << "I'm ball, other is ball (?)" << endl;
-                    // Something is wrong!
-                }
-                
-            } else if (IAmPaddle) {
-                
-                if (checkOtherIsBall()) {
-                    otherIsBall = true;
-                    xPosBar = contours.blobs[0].centroid.x;
-                } else {
-                    // add energy
-                    IAmPaddle = false;
-                    otherIsBall = false;
-                    ILost = true;
-                }
-                
-            }
-            
-            
-            //checkTheOther();
-//            if (otherLost){
-//                if (ballRadius > 0){
-//                    ballRadius--;
-//                } else {
-//                    checkTheOther();
-//                }
-//            } else if (IAmBall && otherIsPaddle) {
-//                vel.x = vel.x * 1.001;
-//                vel.y = vel.y * 1.001;
-//                pos += vel;
-//                checkWalls();
-//                checkBar();
-//                xPosBar = contours.blobs[0].centroid.x;
-//            } else if (IAmBall && !otherIsPaddle && !otherIsBall){ // I'm ball, waiting for the other
-//                pos.x = wWin/2;
-//                pos.y = h/2;
-//                checkTheOther();
-//            } else if (!IAmBall && otherIsBall){ //I'm paddle
-//                xPosBar = contours.blobs[0].centroid.x;
-//                //checkILost();
-//            } else {            //I don't know who I am.
-//                checkTheOther();
-//            }
-        } else {                    // there are no blobs
-//            otherIsBall = false;
-//            otherIsPaddle = false;
-            cout << "no blobs" << endl;
-            if (IAmBall) {
-                if (otherLost) {
-                    IAmPaddle = false;
-                    IAmBall = false;
-                } else {
-                    // other hasn't lost, but there is no blob... obstruction?  Just wait.
-                }
-            }
-            
-            if (IAmPaddle) {
-                ILost = true;
-            }
-            
-            if (ILost) {
-                if (loseTime == 0) {
-                    loseTime = ofGetElapsedTimeMillis(); // we start counting
-                } else {
-                    if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
+                        otherLost = false;
+                    } else {
                         IAmBall = true;
                         IAmPaddle = false;
                         otherIsBall = false;
                         otherIsPaddle = false;
-                        loseTime = 0;
-                        pos.x = wWin / 2;
-                        pos.y = h / 2;
-                        cout << "I'm setting myself to Ball" << endl;
+                        vel = velInit;
+                        ballRadius = ballInitRadius;
+                    }
+                } else if (IAmBall) {
+                    // I'm the ball
+                    
+                    if (otherLost) {
+                        cout << "I'm ball, other has lost." << endl;
+                        // The other has lost, shrink me down then check the other until it shows the ball.
+                        if (ballRadius > 0){
+                            ballRadius--;
+                        } else {
+                            if (checkOtherIsBall()) {
+                                IAmPaddle = true;
+                                IAmBall = false;
+                                otherIsBall = true;
+                                otherIsPaddle = false;
+                                otherLost = false;
+                            }
+                        }
+                    }
+                    
+                    else if ( !(otherIsBall || otherIsPaddle) ) {
+                        
+                        if (checkOtherIsPaddle()) {
+                            otherIsPaddle = true;
+                            otherIsBall = false;
+                        } else {
+                            // the other isn't anything yet, assume beginning of game.
+                            // Can we just set the other to the paddle here? Or do we have to check?
+                            pos.x = wWin/2;
+                            pos.y = h/2;
+                            otherIsPaddle = false;
+                        }
+
+                    }
+                    
+                    else if (otherIsPaddle) {
+                        // update pos
+                        cout << "I'm ball, other is paddle" << endl;
+                        // other is paddle, keep moving and check walls and paddle bouncing
+                        vel.x = vel.x * 1.001;
+                        vel.y = vel.y * 1.001;
+                        pos += vel;
+                        checkWalls();
+                        checkBar();
+                        xPosBar = contours.blobs[0].centroid.x;
+                    }
+                    
+                    else if (otherIsBall) {
+                        cout << "I'm ball, other is ball (?)" << endl;
+                        // Something is wrong!
+                    }
+                    
+                } else if (IAmPaddle) {
+                    
+                    if (checkOtherIsBall()) {
+                        otherIsBall = true;
+                        xPosBar = contours.blobs[0].centroid.x;
+                    } else {
+                        // add energy
+                        IAmPaddle = false;
+                        otherIsBall = false;
+                        ILost = true;
+                    }
+                    
+                }
+            }
+            
+        } else {                    // there are no blobs
+            
+            blobEnergy -= 1;
+            if (blobEnergy <= 0) {
+                blobEnergy = 0;
+                cout << "no blobs" << endl;
+                if (IAmBall) {
+                    if (otherLost) {
+                        IAmPaddle = false;
+                        IAmBall = false;
+                    } else {
+                        // other hasn't lost, but there is no blob... obstruction?  Just wait.
                     }
                 }
                 
+                if (IAmPaddle) {
+                    ILost = true;
+                }
+                
+                if (ILost) {
+                    if (loseTime == 0) {
+                        loseTime = ofGetElapsedTimeMillis(); // we start counting
+                    } else {
+                        if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
+                            IAmBall = true;
+                            IAmPaddle = false;
+                            otherIsBall = false;
+                            otherIsPaddle = false;
+                            loseTime = 0;
+                            pos.x = wWin / 2;
+                            pos.y = h / 2;
+                            cout << "I'm setting myself to Ball" << endl;
+                        }
+                    }
+                    
+                }
+
             }
         }
         break;
@@ -838,6 +829,7 @@ void testApp::drawData() {
         ofDrawBitmapString("Other lost:         " + ofToString(otherLost), 0, 130);
         ofDrawBitmapString("I lost:             " + ofToString(ILost), 0, 140);
         ofDrawBitmapString("Lose time:          " + ofToString(loseTime), 0, 150);
+        ofDrawBitmapString("Blob Energy:        " + ofToString(blobEnergy), 0, 160);
     }
     ofPopMatrix();
 }
@@ -871,8 +863,6 @@ void testApp::drawRGB() {
 
 }
 
-
-
 void testApp::drawBlobFilled() {
     if (!debug) return;
     ofPushMatrix();
@@ -884,9 +874,9 @@ void testApp::drawBlobFilled() {
         blobFilled.draw(0, 0);
         colorWarp.draw(0, 0);
         contours.draw();
-        ofSetColor(255, 0, 0);
-        ofFill();
         if (contours.nBlobs) {
+            ofSetColor(255, 0, 0);
+            ofFill();
             ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, 10);
         }
     }
