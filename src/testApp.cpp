@@ -102,7 +102,7 @@ void testApp::setup() {
     velInit.set(6, 10);
     ratioMarkerArea = 0;
     waitTime = 3000;
-    numGamesBeforeSwitch = 3;
+    numGamesBeforeSwitch = 2;
     numGamesPlayed = 0;
     
 }
@@ -206,9 +206,16 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
         
+        if (blinkCount >= 10) {
+            if(checkOtherIsBall()) {
+                mode = CC_MODE_PONG;
+            }
+        }
+            
         if ((ofGetElapsedTimeMillis() - cursorLastSwitchTime) > myBlinkPeriod/2) {
             cursorOn = !cursorOn;
             cursorLastSwitchTime = ofGetElapsedTimeMillis();
+            blinkCount += 1;
         }
         contours.findContours(grayThres, 100, (wWin * h)/10, 1, false);
         updateBlink();
@@ -230,15 +237,17 @@ void testApp::update() {
         break;
 
     case CC_MODE_PONG:
-        if (wasBallFirst) {
+        if (!wasBallFirst) {
             if (numGamesPlayed >= numGamesBeforeSwitch) {
                 mode = CC_MODE_CURSOR;
+                blinkCount = 0;
                 return;
             }
         } else {
             updateBlink();
-            if (blinkFreq > 900 && blinkFreq < 1100) {
+            if (cursorBlinkInterval > 900 && cursorBlinkInterval < 1100) {
                 mode = CC_MODE_PROGRESS_BAR;
+                blinkCount = 0;
                 return;
             }
         }
@@ -505,6 +514,11 @@ void testApp::draw() {
         barMineCurrent = blinkCount * 10;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
+        
+        if (barMineCurrent >= barLength) {
+            mode = CC_MODE_PONG;
+            IAmBall = true;
+        }
         
 //        if (contours.nBlobs) {
 //            barOtherCurrent = blobArea / barHeight;
@@ -817,11 +831,11 @@ void testApp::drawData() {
     if (!debug) return;
     ofPushMatrix();
     {
-        ofTranslate(50, 50);
+        ofTranslate(-200, 50);
         ofSetColor(0, 255, 0);
         ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
-        ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
+        ofDrawBitmapString("blinkFreq:          " + ofToString(blinkFreq), 0, 50);
         ofDrawBitmapString("The others Period:  " + ofToString(cursorBlinkInterval), 0, 60);
         ofDrawBitmapString("RATIO B/W:          " + ofToString(calibrationBWRatio), 0, 70);
         if (contours.nBlobs) {
