@@ -177,6 +177,9 @@ public:
     float ratioMarkerArea;
     int loseTime;
     int waitTime;
+    bool wasBallFirst;
+    int numGamesPlayed;
+    int numGamesBeforeSwitch;
     
     bool debug;
     
