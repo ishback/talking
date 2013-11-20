@@ -243,7 +243,7 @@ void testApp::update() {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
                 if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
-                    if (!checkOtherIsBall()) {
+//                    if (!checkOtherIsBall()) {
                         IAmBall = true;
                         IAmPaddle = false;
                         otherIsBall = false;
@@ -256,12 +256,12 @@ void testApp::update() {
                         ILost = false;
                         otherLost = false;
                         cout << "I'm setting myself to Ball" << endl;
-                    } else {
-                        IAmBall = false;
-                        IAmPaddle = true;
-                        otherIsBall = false;
-                        otherIsPaddle = false;
-                    }
+//                    } else {
+//                        IAmBall = false;
+//                        IAmPaddle = true;
+//                        otherIsBall = false;
+//                        otherIsPaddle = false;
+//                    }
                 }
             }
             
@@ -816,7 +816,7 @@ void testApp::drawData() {
     if (!debug) return;
     ofPushMatrix();
     {
-        ofTranslate(h + 50, 50);
+        ofTranslate(50, 50);
         ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
         ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
