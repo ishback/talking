@@ -814,6 +814,7 @@ void testApp::drawData() {
     ofPushMatrix();
     {
         ofTranslate(50, 50);
+        ofSetColor(0, 255, 0);
         ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
         ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
@@ -834,6 +835,9 @@ void testApp::drawData() {
         ofDrawBitmapString("I lost:             " + ofToString(ILost), 0, 140);
         ofDrawBitmapString("Lose time:          " + ofToString(loseTime), 0, 150);
         ofDrawBitmapString("Blob Energy:        " + ofToString(blobEnergy), 0, 160);
+        ofDrawBitmapString("Num Games Played:   " + ofToString(numGamesPlayed), 0, 170);
+        ofDrawBitmapString("Was Ball First:     " + ofToString(wasBallFirst), 0, 180);
+        ofSetColor(255);
     }
     ofPopMatrix();
 }
