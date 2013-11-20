@@ -98,6 +98,7 @@ public:
 
     void updateBlink();
     void syncFreqBlinks();
+    void resetPong();
 
     vector<anglePoint> blobCenters;
     

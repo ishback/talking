@@ -217,6 +217,7 @@ void testApp::update() {
                 if (checkOtherIsBall()) {
                     mode = CC_MODE_PONG;
                     IAmPaddle = true;
+                    resetPong();
                 }
             }
         //syncFreqBlinks();
@@ -525,6 +526,7 @@ void testApp::draw() {
         if (barMineCurrent >= barLength) {
             mode = CC_MODE_PONG;
             IAmBall = true;
+            resetPong();
         }
         
 //        if (contours.nBlobs) {
@@ -580,6 +582,14 @@ void testApp::draw() {
     }
     
     ofPopMatrix();
+}
+
+void testApp::resetPong() {
+    pos.x = wWin/2;
+    pos.y = h/2;
+    vel = velInit;
+    checkTime = 0;
+    loseTime = 0;
 }
 
 void testApp::checkEnvironment() {
