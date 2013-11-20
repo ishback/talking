@@ -303,6 +303,30 @@ void testApp::update() {
                 }
             }
         }
+            
+        if (otherLost) {
+            // cout << "I'm ball, other has lost." << endl;
+            // The other has lost, shrink me down then check the other until it shows the ball.
+            if (ballRadius > 0){
+                ballRadius--;
+            } else {
+                if (loseTime == 0) {
+                    loseTime = ofGetElapsedTimeMillis(); // we start counting
+                } else {
+                    if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
+                        if (checkOtherIsBall()) {
+                            IAmPaddle = true;
+                            IAmBall = false;
+                            otherIsBall = true;
+                            otherIsPaddle = false;
+                            otherLost = false;
+                            numGamesPlayed += 1;
+                            loseTime = 0;
+                        }
+                    }
+                }
+            }
+        }
         
         else if (contours.nBlobs) {
             blobFilled.drawBlobIntoMe(contours.blobs[0], 255); //draws the outline of the blob into the blobFilled image
@@ -331,43 +355,7 @@ void testApp::update() {
                 } else if (IAmBall) {
                     // I'm the ball
                     
-                    if (otherLost) {
-                        // cout << "I'm ball, other has lost." << endl;
-                        // The other has lost, shrink me down then check the other until it shows the ball.
-                        if (ballRadius > 0){
-                            ballRadius--;
-                        } else {
-                            if ( numGamesPlayed <= numGamesBeforeSwitch) {
-                                if (checkOtherIsBall()) {
-                                    IAmPaddle = true;
-                                    IAmBall = false;
-                                    otherIsBall = true;
-                                    otherIsPaddle = false;
-                                    otherLost = false;
-                                    numGamesPlayed += 1;
-                                    loseTime = 0;
-                                }
-                            }
-                            else if (loseTime == 0) {
-                                loseTime = ofGetElapsedTimeMillis(); // we start counting
-                            }
-                            else {
-                                if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
-                                    if (checkOtherIsBall()) {
-                                        IAmPaddle = true;
-                                        IAmBall = false;
-                                        otherIsBall = true;
-                                        otherIsPaddle = false;
-                                        otherLost = false;
-                                        numGamesPlayed += 1;
-                                        loseTime = 0;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    else if ( !(otherIsBall || otherIsPaddle) ) {
+                    if ( !(otherIsBall || otherIsPaddle) ) {
                         
                         if (checkOtherIsPaddle()) {
                             otherIsPaddle = true;
