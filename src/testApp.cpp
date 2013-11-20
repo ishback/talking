@@ -275,6 +275,10 @@ void testApp::update() {
 
                 if ( !(IAmBall || IAmPaddle) ) {
                     // I'm not the ball or paddle, so check if the other is the ball
+                    // if time < finalTime >>>checkotheriscursor
+                    // else checkotherisball
+                    // else i'm ball
+                    
                     if (checkOtherIsBall()) {
                         // other is ball, so I'm paddle
                         IAmBall = false;
@@ -282,7 +286,15 @@ void testApp::update() {
                         otherIsBall = true;
                         otherIsPaddle = false;
                         otherLost = false;
-                    } else {
+                    }
+                    
+                    else if (checkOtherIsCursor()){
+                        mode = CC_MODE_PROGRESS_BAR;
+                                                                                // we may need to reset stuff here
+                        return;
+                    }
+                    
+                    else {
                         IAmBall = true;
                         IAmPaddle = false;
                         otherIsBall = false;
@@ -705,12 +717,28 @@ bool testApp::checkOtherIsBall() {
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
     cout << getRatioMarkerArea() << endl;
-    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)) {
+    if ((ratio < 1.5) && (ratio > 0.8) && (getRatioMarkerArea() < 0.1)) {
         // The other is the ball
         return true;
     } else {
         return false;
     }
+}
+
+bool testApp::checkOtherIsCursor(){
+    float areaBoundingBox = contours.blobs[0].boundingRect.width * contours.blobs[0].boundingRect.height;
+    float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
+    // we can use the area of blob to area of bounding box.
+    // or we can use the ratio between height and width of the bounding box. We Do That.
+    cout << getRatioMarkerArea() << endl;
+    
+    if ((ratio < 0.9) && (contours.blobs[0].centroid.x < wWin/2) && (contours.blobs[0].centroid.y < h/2)) {
+        // The other is the cursor
+        return true;
+    } else {
+        return false;
+    }
+
 }
 
 bool testApp::checkOtherIsPaddle() {
