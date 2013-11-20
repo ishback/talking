@@ -210,8 +210,8 @@ void testApp::update() {
             cursorOn = !cursorOn;
             cursorLastSwitchTime = ofGetElapsedTimeMillis();
         }
+        contours.findContours(grayThres, 100, (wWin * h)/10, 1, false);
         updateBlink();
-        //syncFreqBlinks();
 
         break;
 
@@ -230,14 +230,17 @@ void testApp::update() {
         break;
 
     case CC_MODE_PONG:
-
-        if (numGamesPlayed >= numGamesBeforeSwitch) {
-            if (wasBallFirst) {
+        if (wasBallFirst) {
+            if (numGamesPlayed >= numGamesBeforeSwitch) {
                 mode = CC_MODE_CURSOR;
-            } else {
-                mode = CC_MODE_PROGRESS_BAR;
+                return;
             }
-            return;
+        } else {
+            updateBlink();
+            if (blinkFreq > 900 && blinkFreq < 1100) {
+                mode = CC_MODE_PROGRESS_BAR;
+                return;
+            }
         }
             
         rgbToFbo();
@@ -267,7 +270,9 @@ void testApp::update() {
                         ballRadius = ballInitRadius;
                         ILost = false;
                         otherLost = false;
-                        numGamesPlayed += 1;
+                        if (wasBallFirst) {
+                            numGamesPlayed += 1;
+                        }
                         // cout << "I'm setting myself to Ball" << endl;
 //                    } else {
 //                        IAmBall = false;
@@ -497,7 +502,7 @@ void testApp::draw() {
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        barMineCurrent = blinkCount * 3;
+        barMineCurrent = blinkCount * 10;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
         
@@ -651,7 +656,6 @@ void testApp::setSourcePoints(ofTexture &texture, vector<ofPoint> &corners) {
 
 
 void testApp::updateBlink() {
-    contours.findContours(grayThres, 100, w * h, 1, false);
 
     if (contours.nBlobs) {
         // blob detected
@@ -664,7 +668,7 @@ void testApp::updateBlink() {
                     cursorBlinkInterval = ofGetElapsedTimeMillis() - lastBlinkTime;
                     blinkFreq = 1000 / cursorBlinkInterval;
                     lastBlinkTime = ofGetElapsedTimeMillis();
-                    syncFreqBlinks();
+//                    syncFreqBlinks();
                 }
                 blinkCount += 1;
             }
