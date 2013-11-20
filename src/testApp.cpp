@@ -209,13 +209,17 @@ void testApp::update() {
         if (blinkCount >= 10) {
             if(checkOtherIsBall()) {
                 mode = CC_MODE_PONG;
+                IAmBall = false;
+                IAmPaddle = false;
             }
         }
             
         if ((ofGetElapsedTimeMillis() - cursorLastSwitchTime) > myBlinkPeriod/2) {
             cursorOn = !cursorOn;
             cursorLastSwitchTime = ofGetElapsedTimeMillis();
-            blinkCount += 1;
+            if (cursorOn) {
+                blinkCount += 1;
+            }
         }
         contours.findContours(grayThres, 100, (wWin * h)/10, 1, false);
         updateBlink();
@@ -239,16 +243,23 @@ void testApp::update() {
     case CC_MODE_PONG:
         if (!wasBallFirst) {
             if (numGamesPlayed >= numGamesBeforeSwitch) {
+                ofSleepMillis(1000);
                 mode = CC_MODE_CURSOR;
                 blinkCount = 0;
+                numGamesPlayed = 0;
+                wasBallFirst = false;
                 return;
             }
         } else {
-            updateBlink();
-            if (cursorBlinkInterval > 900 && cursorBlinkInterval < 1100) {
-                mode = CC_MODE_PROGRESS_BAR;
-                blinkCount = 0;
-                return;
+            if (numGamesPlayed >= 1) {
+                updateBlink();
+                if (cursorBlinkInterval > 900 && cursorBlinkInterval < 1100) {
+                    mode = CC_MODE_PROGRESS_BAR;
+                    blinkCount = 0;
+                    numGamesPlayed = 0;
+                    wasBallFirst = false;
+                    return;
+                }
             }
         }
             
@@ -279,9 +290,6 @@ void testApp::update() {
                         ballRadius = ballInitRadius;
                         ILost = false;
                         otherLost = false;
-                        if (wasBallFirst) {
-                            numGamesPlayed += 1;
-                        }
                         // cout << "I'm setting myself to Ball" << endl;
 //                    } else {
 //                        IAmBall = false;
@@ -380,6 +388,9 @@ void testApp::update() {
                         IAmPaddle = false;
                         otherIsBall = false;
                         ILost = true;
+                        if (!wasBallFirst) {
+                            numGamesPlayed += 1;
+                        }
                     }
                     
                 }
@@ -402,6 +413,10 @@ void testApp::update() {
                 
                 if (IAmPaddle) {
                     ILost = true;
+                    IAmPaddle = false;
+                    if (!wasBallFirst) {
+                        numGamesPlayed += 1;
+                    }
                 }
 
             }
@@ -511,13 +526,14 @@ void testApp::draw() {
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        barMineCurrent = blinkCount * 10;
+        barMineCurrent = blinkCount * 30;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
         
         if (barMineCurrent >= barLength) {
             mode = CC_MODE_PONG;
             IAmBall = true;
+            wasBallFirst = true;
         }
         
 //        if (contours.nBlobs) {
