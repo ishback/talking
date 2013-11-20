@@ -206,11 +206,13 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
         
-        if (blinkCount >= 10) {
+        if (blinkCount >= 20) {
             if(checkOtherIsBall()) {
                 mode = CC_MODE_PONG;
                 IAmBall = false;
                 IAmPaddle = false;
+                cursorBlinkInterval = 0;
+                return;
             }
         }
             
@@ -243,17 +245,18 @@ void testApp::update() {
     case CC_MODE_PONG:
         if (!wasBallFirst) {
             if (numGamesPlayed >= numGamesBeforeSwitch) {
-                ofSleepMillis(1000);
+//                ofSleepMillis(1000);
                 mode = CC_MODE_CURSOR;
                 blinkCount = 0;
                 numGamesPlayed = 0;
                 wasBallFirst = false;
+                ILost = false;
                 return;
             }
         } else {
             if (numGamesPlayed >= 1) {
                 updateBlink();
-                if (cursorBlinkInterval > 900 && cursorBlinkInterval < 1100) {
+                if (cursorBlinkInterval > 800 && cursorBlinkInterval < 1200) {
                     mode = CC_MODE_PROGRESS_BAR;
                     blinkCount = 0;
                     numGamesPlayed = 0;
@@ -299,7 +302,6 @@ void testApp::update() {
 //                    }
                 }
             }
-            
         }
         
         else if (contours.nBlobs) {
@@ -335,13 +337,32 @@ void testApp::update() {
                         if (ballRadius > 0){
                             ballRadius--;
                         } else {
-                            if (checkOtherIsBall()) {
-                                IAmPaddle = true;
-                                IAmBall = false;
-                                otherIsBall = true;
-                                otherIsPaddle = false;
-                                otherLost = false;
-                                numGamesPlayed += 1;
+                            if ( numGamesPlayed <= numGamesBeforeSwitch) {
+                                if (checkOtherIsBall()) {
+                                    IAmPaddle = true;
+                                    IAmBall = false;
+                                    otherIsBall = true;
+                                    otherIsPaddle = false;
+                                    otherLost = false;
+                                    numGamesPlayed += 1;
+                                    loseTime = 0;
+                                }
+                            }
+                            else if (loseTime == 0) {
+                                loseTime = ofGetElapsedTimeMillis(); // we start counting
+                            }
+                            else {
+                                if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
+                                    if (checkOtherIsBall()) {
+                                        IAmPaddle = true;
+                                        IAmBall = false;
+                                        otherIsBall = true;
+                                        otherIsPaddle = false;
+                                        otherLost = false;
+                                        numGamesPlayed += 1;
+                                        loseTime = 0;
+                                    }
+                                }
                             }
                         }
                     }
@@ -534,6 +555,7 @@ void testApp::draw() {
             mode = CC_MODE_PONG;
             IAmBall = true;
             wasBallFirst = true;
+            cursorBlinkInterval = 0;
         }
         
 //        if (contours.nBlobs) {
