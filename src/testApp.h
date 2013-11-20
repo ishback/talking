@@ -179,6 +179,9 @@ public:
     int loseTime;
     int waitTime;
     
+    int checkTime;
+    int checkDuration;
+    
     bool debug;
     
     bool rotate90;

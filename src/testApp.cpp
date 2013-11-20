@@ -102,6 +102,9 @@ void testApp::setup() {
     velInit.set(6, 10);
     ratioMarkerArea = 0;
     waitTime = 5000;
+    
+    checkTime = 0;
+    checkDuration = 3000;
 }
 
 //--------------------------------------------------------------
@@ -279,30 +282,40 @@ void testApp::update() {
                     // else checkotherisball
                     // else i'm ball
                     
-                    if (checkOtherIsBall()) {
-                        // other is ball, so I'm paddle
-                        IAmBall = false;
-                        IAmPaddle = true;
-                        otherIsBall = true;
-                        otherIsPaddle = false;
-                        otherLost = false;
+                    if (checkTime == 0) {
+                        checkTime = ofGetElapsedTimeMillis(); // we start counting
+                    } else {
+                        if ((ofGetElapsedTimeMillis() - checkTime) < checkDuration){
+                            
+                            if (checkOtherIsCursor()){
+                                mode = CC_MODE_PROGRESS_BAR;
+                                checkTime = 0;
+                                // we may need to reset stuff here
+                                return;
+                            }
+                            
+                        } else {
+                            checkTime = 0;
+                            if (checkOtherIsBall()) {
+                                // other is ball, so I'm paddle
+                                IAmBall = false;
+                                IAmPaddle = true;
+                                otherIsBall = true;
+                                otherIsPaddle = false;
+                                otherLost = false;
+                            } else {
+                                IAmBall = true;
+                                IAmPaddle = false;
+                                otherIsBall = false;
+                                otherIsPaddle = false;
+                                vel = velInit;
+                                ballRadius = ballInitRadius;
+                            }
+
+                        }
                     }
                     
-                    else if (checkOtherIsCursor()){
-                        mode = CC_MODE_PROGRESS_BAR;
-                                                                                // we may need to reset stuff here
-                        return;
-                    }
-                    
-                    else {
-                        IAmBall = true;
-                        IAmPaddle = false;
-                        otherIsBall = false;
-                        otherIsPaddle = false;
-                        vel = velInit;
-                        ballRadius = ballInitRadius;
-                    }
-                } else if (IAmBall) {
+                                    } else if (IAmBall) {
                     // I'm the ball
                     
                     if (otherLost) {
@@ -311,13 +324,19 @@ void testApp::update() {
                         if (ballRadius > 0){
                             ballRadius--;
                         } else {
-                            if (checkOtherIsBall()) {
-                                IAmPaddle = true;
-                                IAmBall = false;
-                                otherIsBall = true;
-                                otherIsPaddle = false;
-                                otherLost = false;
-                            }
+                            IAmPaddle = false;
+                            IAmBall = false;
+                            otherIsBall = false;
+                            otherIsPaddle = false;
+                            otherLost = false;
+
+//                            if (checkOtherIsBall()) {
+//                                IAmPaddle = true;
+//                                IAmBall = false;
+//                                otherIsBall = true;
+//                                otherIsPaddle = false;
+//                                otherLost = false;
+//                            }
                         }
                     }
                     
@@ -392,6 +411,13 @@ void testApp::update() {
                         loseTime = ofGetElapsedTimeMillis(); // we start counting
                     } else {
                         if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
+                            
+                            if (ofRandom(3) > 1) {
+                                mode = CC_MODE_CURSOR;
+                                IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
+                                return;
+                            }
+                            
                             IAmBall = true;
                             IAmPaddle = false;
                             otherIsBall = false;
