@@ -35,7 +35,7 @@ void testApp::setup() {
     xOffset = (w - wWin) / 2;
     
     blobArea = 0;
-    threshold = 127;
+    threshold = 160;
     factor = 1;
     lastArea = 0;
 
@@ -101,6 +101,7 @@ void testApp::setup() {
     pos.set(wWin / 2, h / 2);
     velInit.set(6, 10);
     ratioMarkerArea = 0;
+    loseTime = 0;
     waitTime = 5000;
     
     checkTime = 0;
@@ -235,7 +236,7 @@ void testApp::update() {
         fboToColorWarp();
         colorWarpToGrayThres();
 
-        contours.findContours(grayThres, 100, wWin * h, 1, false);
+        contours.findContours(grayThres, 1000, wWin * h, 1, false);
 
         blobFilled.set(0);
             //cout << contours.nBlobs << endl;
@@ -246,25 +247,23 @@ void testApp::update() {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
                 if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
-//                    if (!checkOtherIsBall()) {
-                        IAmBall = true;
-                        IAmPaddle = false;
-                        otherIsBall = false;
-                        otherIsPaddle = false;
-                        loseTime = 0;
-                        pos.x = wWin / 2;
-                        pos.y = h / 2;
-                        vel = velInit;
-                        ballRadius = ballInitRadius;
-                        ILost = false;
-                        otherLost = false;
-                        cout << "I'm setting myself to Ball" << endl;
-//                    } else {
-//                        IAmBall = false;
-//                        IAmPaddle = true;
-//                        otherIsBall = false;
-//                        otherIsPaddle = false;
+//                    if (ofRandom(3) > 1) {
+                        mode = CC_MODE_CURSOR;
+                        IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
+                        return;
 //                    }
+                    IAmBall = true;
+                    IAmPaddle = false;
+                    otherIsBall = false;
+                    otherIsPaddle = false;
+                    loseTime = 0;
+                    pos.x = wWin / 2;
+                    pos.y = h / 2;
+                    vel = velInit;
+                    ballRadius = ballInitRadius;
+                    ILost = false;
+                    otherLost = false;
+                    cout << "I'm setting myself to Ball" << endl;
                 }
             }
             
@@ -315,7 +314,7 @@ void testApp::update() {
                         }
                     }
                     
-                                    } else if (IAmBall) {
+                } else if (IAmBall) {
                     // I'm the ball
                     
                     if (otherLost) {
@@ -405,32 +404,6 @@ void testApp::update() {
                 if (IAmPaddle) {
                     ILost = true;
                 }
-                
-                if (ILost) {
-                    if (loseTime == 0) {
-                        loseTime = ofGetElapsedTimeMillis(); // we start counting
-                    } else {
-                        if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
-                            
-                            if (ofRandom(3) > 1) {
-                                mode = CC_MODE_CURSOR;
-                                IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
-                                return;
-                            }
-                            
-                            IAmBall = true;
-                            IAmPaddle = false;
-                            otherIsBall = false;
-                            otherIsPaddle = false;
-                            loseTime = 0;
-                            pos.x = wWin / 2;
-                            pos.y = h / 2;
-                            cout << "I'm setting myself to Ball" << endl;
-                        }
-                    }
-                    
-                }
-
             }
         }
         break;
@@ -743,7 +716,7 @@ bool testApp::checkOtherIsBall() {
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
     cout << getRatioMarkerArea() << endl;
-    if ((ratio < 1.5) && (ratio > 0.8) && (getRatioMarkerArea() < 0.1)) {
+    if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)) {
         // The other is the ball
         return true;
     } else {
@@ -782,12 +755,12 @@ bool testApp::checkOtherIsPaddle() {
 
 void testApp::checkWalls() {
 
-    if (pos.x > wWin) {
-        pos.x = wWin;
+    if (pos.x + ballRadius > wWin) {
+        pos.x = wWin - ballRadius;
         vel.x = -vel.x;
         cout << "here1" << endl;
-    } else if (pos.x  < 0) {
-        pos.x = 0;
+    } else if (pos.x - ballRadius < 0) {
+        pos.x = ballRadius;
         vel.x = -vel.x;
         cout << "here2" << endl;
     }
@@ -870,7 +843,7 @@ void testApp::drawData() {
     if (!debug) return;
     ofPushMatrix();
     {
-        ofTranslate(50, 50);
+        ofTranslate(-200, 50);
         ofDrawBitmapString("Blobs: " + ofToString(contours.nBlobs), 0, 0);
         ofDrawBitmapString("blinkCount:         " + ofToString(blinkCount), 0, 40);
         ofDrawBitmapString("myPeriod:           " + ofToString(myBlinkPeriod), 0, 50);
