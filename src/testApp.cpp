@@ -4,7 +4,7 @@
 
 //--------------------------------------------------------------
 void testApp::setup() {
-    ofSetFrameRate(30);
+    ofSetFrameRate(15);
     
     debug = false;
     
@@ -23,8 +23,8 @@ void testApp::setup() {
     } else {
         w = 720;
         h = 446;
-        camW = 640;
-        camH = 480;
+        camW = 320;
+        camH = 240;
     }
     
     movie.setDesiredFrameRate(30);
@@ -94,10 +94,10 @@ void testApp::setup() {
     otherIsBall = false;
     otherIsPaddle = false;
     IAmBall = false;
-    yPosBar = h - 80;
-    barPongWidth = 200;
-    barPongHeight = 40;
-    ballInitRadius = 50;
+    yPosBar = h - 60;
+    barPongWidth = 180;
+    barPongHeight = 30;
+    ballInitRadius = 40;
     pos.set(wWin / 2, h / 2);
     velInit.set(6, 10);
     ratioMarkerArea = 0;
@@ -242,19 +242,26 @@ void testApp::update() {
             if (loseTime == 0) {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
-                if ((ofGetElapsedTimeMillis() - loseTime) > waitTime){
-                    IAmBall = true;
-                    IAmPaddle = false;
-                    otherIsBall = false;
-                    otherIsPaddle = false;
-                    loseTime = 0;
-                    pos.x = wWin / 2;
-                    pos.y = h / 2;
-                    vel = velInit;
-                    ballRadius = ballInitRadius;
-                    ILost = false;
-                    otherLost = false;
-                    cout << "I'm setting myself to Ball" << endl;
+                if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
+                    if (!checkOtherIsBall()) {
+                        IAmBall = true;
+                        IAmPaddle = false;
+                        otherIsBall = false;
+                        otherIsPaddle = false;
+                        loseTime = 0;
+                        pos.x = wWin / 2;
+                        pos.y = h / 2;
+                        vel = velInit;
+                        ballRadius = ballInitRadius;
+                        ILost = false;
+                        otherLost = false;
+                        cout << "I'm setting myself to Ball" << endl;
+                    } else {
+                        IAmBall = false;
+                        IAmPaddle = true;
+                        otherIsBall = false;
+                        otherIsPaddle = false;
+                    }
                 }
             }
             
@@ -326,7 +333,7 @@ void testApp::update() {
                         pos += vel;
                         checkWalls();
                         checkBar();
-                        xPosBar = contours.blobs[0].centroid.x;
+                        xPosBar = wWin - contours.blobs[0].centroid.x;
                     }
                     
                     else if (otherIsBall) {
@@ -338,7 +345,7 @@ void testApp::update() {
                     
                     if (checkOtherIsBall()) {
                         otherIsBall = true;
-                        xPosBar = contours.blobs[0].centroid.x;
+                        xPosBar = wWin - contours.blobs[0].centroid.x;
                     } else {
                         // add energy
                         IAmPaddle = false;
@@ -721,12 +728,12 @@ bool testApp::checkOtherIsPaddle() {
 
 void testApp::checkWalls() {
 
-    if (pos.x + ballRadius > wWin) {
-        pos.x = wWin - ballRadius;
+    if (pos.x > wWin) {
+        pos.x = wWin;
         vel.x = -vel.x;
         cout << "here1" << endl;
-    } else if (pos.x - ballRadius < 0) {
-        pos.x = 0 + ballRadius;
+    } else if (pos.x  < 0) {
+        pos.x = 0;
         vel.x = -vel.x;
         cout << "here2" << endl;
     }
