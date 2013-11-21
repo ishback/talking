@@ -209,18 +209,18 @@ void testApp::update() {
         
         if ((ofGetElapsedTimeMillis() - cursorLastSwitchTime) > myBlinkPeriod/2) {
             cursorOn = !cursorOn;
+            blinkCount += 1;
             cursorLastSwitchTime = ofGetElapsedTimeMillis();
         }
         updateBlink();
             
-            if (blinkCount > 5) {
-                if (checkOtherIsBall()) {
-                    mode = CC_MODE_PONG;
-                    IAmPaddle = true;
-                    resetPong();
-                }
+        if (blinkCount > 5) {
+            if (checkOtherIsBall()) {
+                mode = CC_MODE_PONG;
+                resetPong();
+                IAmPaddle = true;
             }
-        //syncFreqBlinks();
+        }
 
         break;
 
@@ -366,8 +366,8 @@ void testApp::update() {
                         // update pos
                         cout << "I'm ball, other is paddle" << endl;
                         // other is paddle, keep moving and check walls and paddle bouncing
-                        vel.x = vel.x * 1.001;
-                        vel.y = vel.y * 1.001;
+                        vel.x = vel.x * 1.010;
+                        vel.y = vel.y * 1.010;
                         pos += vel;
                         checkWalls();
                         checkBar();
@@ -519,14 +519,14 @@ void testApp::draw() {
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        barMineCurrent = blinkCount * 10;
+        barMineCurrent = blinkCount * 50;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
         
         if (barMineCurrent >= barLength) {
             mode = CC_MODE_PONG;
-            IAmBall = true;
             resetPong();
+            IAmBall = true;
         }
         
 //        if (contours.nBlobs) {
@@ -590,6 +590,10 @@ void testApp::resetPong() {
     vel = velInit;
     checkTime = 0;
     loseTime = 0;
+    ballRadius = ballInitRadius;
+    ILost = false;
+    otherLost = false;
+    IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
 }
 
 void testApp::checkEnvironment() {
@@ -700,7 +704,7 @@ void testApp::updateBlink() {
                     cursorBlinkInterval = ofGetElapsedTimeMillis() - lastBlinkTime;
                     blinkFreq = 1000 / cursorBlinkInterval;
                     lastBlinkTime = ofGetElapsedTimeMillis();
-                    syncFreqBlinks();
+//                    syncFreqBlinks();
                 }
                 blinkCount += 1;
             }
@@ -768,7 +772,7 @@ bool testApp::checkOtherIsPaddle() {
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
     cout << getRatioMarkerArea() << endl;
-    if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.1)) {
+    if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.1) && (contours.blobs[0].centroid.y > h/2)) {
         // The other is the paddle
         return true;
     }
