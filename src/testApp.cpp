@@ -218,7 +218,7 @@ void testApp::update() {
             if (checkOtherIsBall()) {
                 mode = CC_MODE_PONG;
                 resetPong();
-                IAmPaddle = true;
+//                IAmPaddle = true;
             }
         }
 
@@ -257,6 +257,7 @@ void testApp::update() {
                 if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
 //                    if (ofRandom(3) > 1) {
                         mode = CC_MODE_CURSOR;
+                        blinkCount = 0;
                         IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
                         return;
 //                    }
@@ -274,7 +275,6 @@ void testApp::update() {
                     cout << "I'm setting myself to Ball" << endl;
                 }
             }
-            
         }
         
         else if (contours.nBlobs) {
@@ -296,6 +296,8 @@ void testApp::update() {
                             
                             if (checkOtherIsCursor()){
                                 mode = CC_MODE_PROGRESS_BAR;
+                                barMineCurrent = 0;
+                                blinkCount = 0;
                                 checkTime = 0;
                                 // we may need to reset stuff here
                                 return;
@@ -526,6 +528,7 @@ void testApp::draw() {
         if (barMineCurrent >= barLength) {
             mode = CC_MODE_PONG;
             resetPong();
+            barMineCurrent = 0;
             IAmBall = true;
         }
         
