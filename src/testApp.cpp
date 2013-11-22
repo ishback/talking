@@ -160,7 +160,7 @@ void testApp::update() {
         colorWarpToGrayThres();
 
         contours.findContours(grayThres, 1000, w * h, 1, false);
-        cout << contours.nBlobs << "  ";
+        // cout << contours.nBlobs << "  ";
         //blobFilled.set(0);
         //blobFilled.drawBlobIntoMe(contours.blobs[0], 255);
 
@@ -247,10 +247,10 @@ void testApp::update() {
         contours.findContours(grayThres, 1000, wWin * h, 1, false);
 
         blobFilled.set(0);
-            //cout << contours.nBlobs << endl;
+            //// cout << contours.nBlobs << endl;
             
         if (ILost) {
-            cout << "I lost." << endl;
+            // cout << "I lost." << endl;
             if (loseTime == 0) {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
@@ -272,7 +272,7 @@ void testApp::update() {
                     ballRadius = ballInitRadius;
                     ILost = false;
                     otherLost = false;
-                    cout << "I'm setting myself to Ball" << endl;
+                    // cout << "I'm setting myself to Ball" << endl;
                 }
             }
         }
@@ -328,7 +328,7 @@ void testApp::update() {
                     // I'm the ball
                     
                     if (otherLost) {
-                        cout << "I'm ball, other has lost." << endl;
+                        // cout << "I'm ball, other has lost." << endl;
                         // The other has lost, shrink me down then check the other until it shows the ball.
                         if (ballRadius > 0){
                             ballRadius--;
@@ -366,10 +366,10 @@ void testApp::update() {
                     
                     else if (otherIsPaddle) {
                         // update pos
-                        cout << "I'm ball, other is paddle" << endl;
+                        // cout << "I'm ball, other is paddle" << endl;
                         // other is paddle, keep moving and check walls and paddle bouncing
-                        vel.x = vel.x * 1.010;
-                        vel.y = vel.y * 1.010;
+                        vel.x = vel.x * 1.005;
+                        vel.y = vel.y * 1.005;
                         pos += vel;
                         checkWalls();
                         checkBar();
@@ -377,7 +377,7 @@ void testApp::update() {
                     }
                     
                     else if (otherIsBall) {
-                        cout << "I'm ball, other is ball (?)" << endl;
+                        // cout << "I'm ball, other is ball (?)" << endl;
                         // Something is wrong!
                     }
                     
@@ -401,7 +401,7 @@ void testApp::update() {
             blobEnergy -= 1;
             if (blobEnergy <= 0) {
                 blobEnergy = 0;
-                cout << "no blobs" << endl;
+                // cout << "no blobs" << endl;
                 if (IAmBall) {
                     if (otherLost) {
                         IAmPaddle = false;
@@ -506,7 +506,7 @@ void testApp::draw() {
         ofFill();
         if (contours.nBlobs) {
             float radius = sqrt(blobArea / PI);
-            cout << "radius " << radius << endl;
+            // cout << "radius " << radius << endl;
             ofCircle(contours.blobs[0].centroid.x, contours.blobs[0].centroid.y, radius);
         }
         break;
@@ -744,7 +744,7 @@ bool testApp::checkOtherIsBall() {
     float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
-    cout << getRatioMarkerArea() << endl;
+    // cout << getRatioMarkerArea() << endl;
     if ((ratio < 1.5) && (getRatioMarkerArea() < 0.1)) {
         // The other is the ball
         return true;
@@ -774,7 +774,7 @@ bool testApp::checkOtherIsCursor(){
     float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
-    cout << getRatioMarkerArea() << endl;
+    // cout << getRatioMarkerArea() << endl;
     
     if ((ratio < 0.9) && (contours.blobs[0].centroid.x < wWin/2) && (contours.blobs[0].centroid.y < h/2)) {
         // The other is the cursor
@@ -790,7 +790,7 @@ bool testApp::checkOtherIsPaddle() {
     float ratio = contours.blobs[0].boundingRect.width / contours.blobs[0].boundingRect.height;
     // we can use the area of blob to area of bounding box.
     // or we can use the ratio between height and width of the bounding box. We Do That.
-    cout << getRatioMarkerArea() << endl;
+    // cout << getRatioMarkerArea() << endl;
     if ((ratio >= 1.5) && (getRatioMarkerArea() < 0.1) && (contours.blobs[0].centroid.y > h/2)) {
         // The other is the paddle
         return true;
@@ -800,23 +800,23 @@ bool testApp::checkOtherIsPaddle() {
 
 void testApp::checkWalls() {
 
-    if (pos.x + ballRadius > wWin) {
-        pos.x = wWin - ballRadius;
+    if (pos.x > wWin) {
+        pos.x = wWin;
         vel.x = -vel.x;
-        cout << "here1" << endl;
-    } else if (pos.x - ballRadius < 0) {
-        pos.x = ballRadius;
+        // cout << "here1" << endl;
+    } else if (pos.x < 0) {
+        pos.x = 0;
         vel.x = -vel.x;
-        cout << "here2" << endl;
+        // cout << "here2" << endl;
     }
     if (pos.y - ballRadius < 0) {
         pos.y = 0 + ballRadius;
         vel.y = -vel.y;
-        cout << "here3" << endl;
+        // cout << "here3" << endl;
     } else if (pos.y + ballRadius > h) {
         pos.y = h - ballRadius;
         vel.y = -vel.y;
-        cout << "here4" << endl;
+        // cout << "here4" << endl;
     }
 }
 
@@ -826,11 +826,11 @@ void testApp::checkBar() {
         if ((pos.x > xPosBar + barPongWidth / 2) || (pos.x < xPosBar - barPongWidth / 2)) {
             otherLost = true;
             vel = velInit;
-            cout << "LOSE!!!" << endl;
+            // cout << "LOSE!!!" << endl;
         } else {
             pos.y = yPosBar - barPongHeight / 2 - ballRadius - 5;
             vel.y = -vel.y;
-            cout << "good" << endl;
+            // cout << "good" << endl;
         }
     }
 }
@@ -921,7 +921,7 @@ void testApp::drawARCorners(vector<ofPoint> &corners) {
         ofScale(0.5, 0.5);
         //                ofSetHexColor(0x00FFff);
         for (int i = 0; i < corners.size(); i++) {
-//            cout << corners[i].x << ", " << corners[i].y << endl;
+//            // cout << corners[i].x << ", " << corners[i].y << endl;
             ofDrawBitmapString(ofToString(i), corners[i].x, corners[i].y);
         }
     }
