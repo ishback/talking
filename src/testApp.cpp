@@ -35,7 +35,7 @@ void testApp::setup() {
     xOffset = (w - wWin) / 2;
     
     blobArea = 0;
-    threshold = 160;
+    threshold = 200;
     factor = 1;
     lastArea = 0;
 
@@ -110,6 +110,10 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
+    threshold = ofMap(mouseY, 0, h, 0, 255, true);
+    artk.setThreshold(threshold);
+    cout << threshold << endl;
+    
     movie.update();
     
     if (movie.isFrameNew()) {
