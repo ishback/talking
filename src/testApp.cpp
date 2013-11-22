@@ -110,9 +110,8 @@ void testApp::setup() {
 
 //--------------------------------------------------------------
 void testApp::update() {
-    threshold = ofMap(mouseY, 0, h, 0, 255, true);
-    artk.setThreshold(threshold);
-    cout << threshold << endl;
+
+//    cout << threshold << endl;
     
     movie.update();
     
@@ -335,7 +334,7 @@ void testApp::update() {
                         // cout << "I'm ball, other has lost." << endl;
                         // The other has lost, shrink me down then check the other until it shows the ball.
                         if (ballRadius > 0){
-                            ballRadius--;
+                            ballRadius-=2;
                         } else {
                             IAmPaddle = false;
                             IAmBall = false;
@@ -525,7 +524,7 @@ void testApp::draw() {
         ofSetColor(255);
         ofNoFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, barLength, barHeight);
-        barMineCurrent = blinkCount * 50;
+        barMineCurrent = blinkCount * 25;
         ofFill();
         ofRect((wWin - barLength) / 2, h / 2 - barHeight / 2, ofClamp(barMineCurrent, 0, barLength), barHeight);
         
@@ -553,10 +552,9 @@ void testApp::draw() {
         ofSetColor(255);
         ofFill();
         if (cursorOn) {
-            ofRect(100, 100, 80, 160);
+            ofRect(50, 50, 40, 80);
         }
 
-        //contours.draw();
         break;
     }
 
@@ -1097,7 +1095,8 @@ void testApp::keyReleased(int key) {
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y ) {
-
+    threshold = ofMap(x, 0, h, 0, 255, true);
+    artk.setThreshold(threshold);
 }
 
 //--------------------------------------------------------------
