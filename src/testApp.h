@@ -92,6 +92,7 @@ public:
     void checkTheOther();
     bool checkOtherIsPaddle();
     bool checkOtherIsBall();
+    bool checkOtherIsBallAtCenter();
     bool checkOtherIsCursor();
     void checkILost();
     float getRatioMarkerArea();

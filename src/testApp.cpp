@@ -215,7 +215,7 @@ void testApp::update() {
         updateBlink();
             
         if (blinkCount > 5) {
-            if (checkOtherIsBall()) {
+            if (checkOtherIsBallAtCenter()) {
                 mode = CC_MODE_PONG;
                 resetPong();
 //                IAmPaddle = true;
@@ -255,12 +255,12 @@ void testApp::update() {
                 loseTime = ofGetElapsedTimeMillis(); // we start counting
             } else {
                 if ((ofGetElapsedTimeMillis() - loseTime) > waitTime) {
-//                    if (ofRandom(3) > 1) {
+                    if (ofRandom(3) > 1) {
                         mode = CC_MODE_CURSOR;
                         blinkCount = 0;
                         IAmPaddle = IAmBall = otherIsBall = otherIsPaddle = false;
                         return;
-//                    }
+                    }
                     IAmBall = true;
                     IAmPaddle = false;
                     otherIsBall = false;
@@ -751,6 +751,22 @@ bool testApp::checkOtherIsBall() {
     } else {
         return false;
     }
+}
+
+bool testApp::checkOtherIsBallAtCenter() {
+    if (!contours.nBlobs) {
+        return false;
+    }
+    
+    if (checkOtherIsBall()) {
+        int rectWidth = 50;
+        ofRectangle rect = ofRectangle(wWin/2-rectWidth/2, h/2-rectWidth/2, rectWidth, rectWidth);
+        if (rect.inside(contours.blobs[0].centroid)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 bool testApp::checkOtherIsCursor(){
