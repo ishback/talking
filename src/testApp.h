@@ -92,11 +92,13 @@ public:
     void checkTheOther();
     bool checkOtherIsPaddle();
     bool checkOtherIsBall();
+    bool checkOtherIsCursor();
     void checkILost();
     float getRatioMarkerArea();
 
     void updateBlink();
     void syncFreqBlinks();
+    void resetPong();
 
     vector<anglePoint> blobCenters;
     
@@ -180,6 +182,9 @@ public:
     bool wasBallFirst;
     int numGamesPlayed;
     int numGamesBeforeSwitch;
+    
+    int checkTime;
+    int checkDuration;
     
     bool debug;
     
